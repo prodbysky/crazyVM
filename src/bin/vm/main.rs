@@ -1,3 +1,5 @@
+mod data_structures;
+mod machine;
 mod utils;
 
 use clap::Parser;
