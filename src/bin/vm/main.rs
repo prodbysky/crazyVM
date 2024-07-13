@@ -1,4 +1,5 @@
 pub mod data_structures;
+pub mod instructions;
 pub mod machine;
 mod tests;
 pub mod utils;
