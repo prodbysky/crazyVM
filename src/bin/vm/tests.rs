@@ -1,5 +1,3 @@
-use crate::data_structures::rom::Rom;
-
 #[cfg(test)]
 #[test]
 fn ram_write() {

@@ -4,6 +4,7 @@ mod tests;
 pub mod utils;
 
 use clap::Parser;
+use machine::CrazyVM;
 
 // crazyVM executable
 #[derive(Parser, Debug)]
@@ -28,5 +29,6 @@ fn main() {
         }
     };
 
-    eprintln!("{:?}", program);
+    let mut machine = CrazyVM::new(&program, args.memory_size);
+    machine.step();
 }
