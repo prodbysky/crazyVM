@@ -1,3 +1,5 @@
+use crate::data_structures::error::OutOfBoundsError;
+
 pub struct Ram {
     data: Vec<u8>,
 }
@@ -7,6 +9,11 @@ impl Ram {
         Self {
             data: vec![0; size],
         }
+    }
+
+    #[cfg(test)]
+    pub fn get_data(&self) -> &[u8] {
+        &self.data
     }
 
     pub fn write(&mut self, byte: u8, index: usize) -> Result<(), OutOfBoundsError> {

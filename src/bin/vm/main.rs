@@ -1,6 +1,7 @@
-mod data_structures;
-mod machine;
-mod utils;
+pub mod data_structures;
+pub mod machine;
+mod tests;
+pub mod utils;
 
 use clap::Parser;
 

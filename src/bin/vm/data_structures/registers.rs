@@ -1,3 +1,5 @@
+use std::ops::{Index, IndexMut};
+
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Register {
@@ -21,6 +23,12 @@ impl Registers {
         Self {
             registers: [0; Register::Count as usize],
         }
+    }
+}
+
+impl Default for Registers {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
