@@ -33,3 +33,9 @@ impl Rom {
         Ok(buf)
     }
 }
+
+impl From<&[u8]> for Rom {
+    fn from(value: &[u8]) -> Self {
+        Self { data: value.into() }
+    }
+}
