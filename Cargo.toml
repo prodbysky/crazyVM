@@ -1,0 +1,19 @@
+[package]
+name = "crazyVM"
+authors = ["prodbysky/stinta kyrbynyt@gmail.com"]
+description = "My first attempt at writing a virtual machine"
+version = "0.0.1"
+edition = "2021"
+
+readme = "README.md"
+repository = "https://github.com/prodbysky/crazyVM"
+license = "MIT"
+keywords = ["virtual-machine", "32bit"]
+
+[profile.dev]
+opt-level = 0
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
