@@ -1,4 +1,4 @@
-use crate::data_structures::{Ram, Registers, Rom};
+use crate::data_structures::{ram::Ram, registers::Registers, rom::Rom};
 
 pub struct CrazyVM {
     program: Rom,
