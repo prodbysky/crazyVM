@@ -1,5 +1,4 @@
 pub mod data_structures;
-pub mod instructions;
 pub mod machine;
 mod tests;
 pub mod utils;
@@ -32,6 +31,7 @@ fn main() {
 
     let mut machine = CrazyVM::new(&program, args.memory_size);
     loop {
+        machine.dump_state();
         match machine.step() {
             Ok(()) => {}
             Err(machine::RuntimeError::NoNextInstruction) => break,
@@ -41,5 +41,4 @@ fn main() {
             }
         }
     }
-    machine.dump_state()
 }

@@ -14,8 +14,17 @@ this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Mar
 - Add:
     10000000 rg1 rg2 rg3 0000000 00000000
 
+- Sub:
+    01000000 rg1 rg2 rg3 0000000 00000000
+
+- Mul:
+    11000000 rg1 rg2 rg3 0000000 00000000
+
+- Div:
+    00100000 rg1 rg2 rg3 0000000 00000000
+
 - Immediate value
-    11100000 rg1 literal------
+    10100000 rg1 literal------
 
 -  Push to stack
-    00010000 rg1 00000 00000000
+    01100000 rg1 00000 00000000

@@ -1,4 +1,4 @@
-use core::fmt;
+use std::fmt;
 use std::ops::{Index, IndexMut};
 
 /// A, B, C, D - General purpose registers
@@ -33,6 +33,44 @@ impl From<u32> for Register {
             6 => Self::C,
             7 => Self::D,
             _ => unreachable!(),
+        }
+    }
+}
+
+impl From<Register> for u32 {
+    fn from(value: Register) -> Self {
+        use Register::*;
+        match value {
+            SP => 0,
+            PC => 1,
+            Flag => 2,
+            Zero => 3,
+            A => 4,
+            B => 5,
+            C => 6,
+            D => 7,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct InvalidRegister;
+
+impl TryFrom<&str> for Register {
+    type Error = InvalidRegister;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "SP" => Ok(Self::SP),
+            "PC" => Ok(Self::PC),
+            "Flag" => Ok(Self::Flag),
+            "Zero" => Ok(Self::Zero),
+            "A" => Ok(Self::A),
+            "B" => Ok(Self::B),
+            "C" => Ok(Self::C),
+            "D" => Ok(Self::D),
+            _ => Err(InvalidRegister),
         }
     }
 }

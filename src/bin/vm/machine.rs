@@ -1,13 +1,9 @@
 use core::fmt;
 
-use crate::{
-    data_structures::{
-        ram::Ram,
-        registers::{Register, Registers},
-        rom::Rom,
-    },
-    instructions::Opcode,
-};
+use common::instructions::Opcode;
+use common::registers::{Register, Registers};
+
+use crate::data_structures::{ram::Ram, rom::Rom};
 
 /// The virtual machine state struct itself
 pub struct CrazyVM {

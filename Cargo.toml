@@ -22,5 +22,9 @@ name = "vm"
 [[bin]]
 name = "crassembler"
 
+[lib]
+name = "common"
+path = "src/lib/common/lib.rs"
+
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
