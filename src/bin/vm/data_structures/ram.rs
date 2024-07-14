@@ -16,6 +16,10 @@ impl Ram {
         &self.data
     }
 
+    pub fn max_size(&self) -> usize {
+        self.data.len()
+    }
+
     pub fn write(&mut self, byte: u8, index: usize) -> Result<(), OutOfBoundsError> {
         if index >= self.data.len() {
             return Err(OutOfBoundsError(index));

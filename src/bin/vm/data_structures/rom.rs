@@ -1,15 +1,15 @@
 use crate::data_structures::error::OutOfBoundsError;
 
 pub struct Rom {
-    data: Vec<u8>,
+    data: Vec<u32>,
 }
 
 impl Rom {
-    pub fn new(data: Vec<u8>) -> Self {
+    pub fn new(data: Vec<u32>) -> Self {
         Self { data }
     }
 
-    pub fn read(&self, index: usize) -> Result<u8, OutOfBoundsError> {
+    pub fn read(&self, index: usize) -> Result<u32, OutOfBoundsError> {
         if self.data.len() <= index {
             return Err(OutOfBoundsError(index));
         }
@@ -17,7 +17,7 @@ impl Rom {
         Ok(self.data[index])
     }
 
-    pub fn read_many(&self, mut index: usize, mut n: usize) -> Result<Vec<u8>, OutOfBoundsError> {
+    pub fn read_many(&self, mut index: usize, mut n: usize) -> Result<Vec<u32>, OutOfBoundsError> {
         if self.data.len() <= index {
             return Err(OutOfBoundsError(index));
         }
@@ -34,8 +34,8 @@ impl Rom {
     }
 }
 
-impl From<&[u8]> for Rom {
-    fn from(value: &[u8]) -> Self {
+impl From<&[u32]> for Rom {
+    fn from(value: &[u32]) -> Self {
         Self { data: value.into() }
     }
 }

@@ -1,6 +1,6 @@
 use std::io::Read;
 
-pub fn read_binary(name: &str) -> Option<Vec<u8>> {
+pub fn read_binary(name: &str) -> Option<Vec<u32>> {
     let mut file = match std::fs::File::open(name) {
         Ok(file) => file,
         Err(e) => {
@@ -19,7 +19,13 @@ pub fn read_binary(name: &str) -> Option<Vec<u8>> {
     let mut buf = vec![];
 
     for byte in content.split_whitespace() {
-        match u8::from_str_radix(byte, 16) {
+        let mut reversed = String::with_capacity(byte.len());
+
+        for ch in byte.chars().rev() {
+            reversed.push(ch);
+        }
+
+        match u32::from_str_radix(&reversed, 16) {
             Ok(num) => buf.push(num),
             Err(e) => {
                 eprintln!("Invalid hex value in program: {}", e);
@@ -27,6 +33,5 @@ pub fn read_binary(name: &str) -> Option<Vec<u8>> {
             }
         };
     }
-
     Some(buf)
 }

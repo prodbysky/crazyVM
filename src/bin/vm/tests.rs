@@ -62,6 +62,7 @@ fn register_write() {
 
 #[test]
 fn rom_read() {
+    use crate::data_structures::rom::Rom;
     let rom = Rom::new(Vec::from(&[1, 2, 3, 4]));
     let single_read = rom.read(0).unwrap();
     let multiple_read = rom.read_many(1, 3).unwrap();

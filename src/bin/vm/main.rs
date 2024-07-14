@@ -31,5 +31,15 @@ fn main() {
     };
 
     let mut machine = CrazyVM::new(&program, args.memory_size);
-    machine.step();
+    loop {
+        match machine.step() {
+            Ok(()) => {}
+            Err(machine::RuntimeError::NoNextInstruction) => break,
+            Err(e) => {
+                eprintln!("FATAL ERROR: {}", e);
+                break;
+            }
+        }
+    }
+    machine.dump_state()
 }
