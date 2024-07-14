@@ -22,7 +22,12 @@ impl TryFrom<&str> for Bit13Literal {
     type Error = Invalid13BitLitError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let num = match value.parse::<u16>() {
+        let (num, base) = match value.chars().nth(0).unwrap() {
+            '#' => (&value[1..], 16),
+            '$' => (&value[1..], 2),
+            _ => (value, 10),
+        };
+        let num = match u16::from_str_radix(num, base) {
             Ok(num) => num,
             Err(_) => return Err(Invalid13BitLitError::InvalidDigit),
         };
