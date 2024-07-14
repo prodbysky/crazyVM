@@ -52,7 +52,7 @@ fn raw_read_fail() {
 
 #[test]
 fn register_write() {
-    use crate::data_structures::registers::{Register, Registers};
+    use common::registers::*;
     let mut registers = Registers::new();
 
     registers[Register::A] = 1;
