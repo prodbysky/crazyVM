@@ -19,5 +19,8 @@ opt-level = 3
 [[bin]]
 name = "vm"
 
+[[bin]]
+name = "crassembler"
+
 [dependencies]
 clap = { version = "4.5.9", features = ["derive"] }
