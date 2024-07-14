@@ -12,13 +12,10 @@ this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Mar
 
 ## Instructions
 - Add:
-    10000000 xxx yyy zzz 0000000 00000000
-             r 1 r 2 r 3
+    10000000 rg1 rg2 rg3 0000000 00000000
 
 - Immediate value
-    11100000 xxxy yyyy yyyy yyyy
-             r 1  literal
+    11100000 rg1 literal------
 
 -  Push to stack
-    00010000 xxx 00000 00000000
-             r 1
+    00010000 rg1 00000 00000000
