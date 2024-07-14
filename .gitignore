@@ -17,5 +17,5 @@ Cargo.lock
 # Added by cargo
 
 /target
-program.cr
+out.cr
 program.casm
