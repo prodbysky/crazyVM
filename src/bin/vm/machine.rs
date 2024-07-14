@@ -9,12 +9,14 @@ use crate::{
     instructions::Opcode,
 };
 
+/// The virtual machine state struct itself
 pub struct CrazyVM {
     program: Rom,
     registers: Registers,
     memory: Ram,
 }
 
+/// NoNextInstruction - Signals to the manager to stop stepping the VM
 #[derive(Debug)]
 pub enum RuntimeError {
     StackOverflow,
@@ -68,12 +70,13 @@ impl CrazyVM {
         Ok(())
     }
 
+    /// Helper function for pushing values from registers to the stack
     fn u32_to_4u8(num: u32) -> Vec<u8> {
         [
-            (num & 0xFF) as u8,
-            ((num >> 8) & 0xFF) as u8,
-            ((num >> 16) & 0xFF) as u8,
-            ((num >> 24) & 0xFF) as u8,
+            (num & 0xff) as u8,
+            ((num >> 8) & 0xff) as u8,
+            ((num >> 16) & 0xff) as u8,
+            ((num >> 24) & 0xff) as u8,
         ]
         .to_vec()
     }
@@ -87,6 +90,15 @@ impl CrazyVM {
             Opcode::Add(r1, r2, r3) => {
                 self.registers[r3] = self.registers[r1] + self.registers[r2];
             }
+            Opcode::Sub(r1, r2, r3) => {
+                self.registers[r3] = self.registers[r1] - self.registers[r2];
+            }
+            Opcode::Mul(r1, r2, r3) => {
+                self.registers[r3] = self.registers[r1] * self.registers[r2];
+            }
+            Opcode::Div(r1, r2, r3) => {
+                self.registers[r3] = self.registers[r1] / self.registers[r2];
+            }
             Opcode::Imm(r1, imm) => {
                 self.registers[r1] = imm.into();
             }
@@ -96,6 +108,7 @@ impl CrazyVM {
         Ok(())
     }
 
+    /// Used for debug purposes
     pub fn dump_state(&self) {
         eprintln!("{}", self.registers);
 

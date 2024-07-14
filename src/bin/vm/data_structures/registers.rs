@@ -1,6 +1,12 @@
 use core::fmt;
 use std::ops::{Index, IndexMut};
 
+/// A, B, C, D - General purpose registers
+/// SP - Stack pointer
+/// PC - Program pointer,
+/// Flag - Flags (over/underflow, comparisons)
+/// Zero - Always zero, writing to this does nothing
+/// Count - Never used by the program
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Register {

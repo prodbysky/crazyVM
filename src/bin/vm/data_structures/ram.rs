@@ -1,5 +1,6 @@
 use crate::data_structures::error::OutOfBoundsError;
 
+/// Fixed size Random access memory
 pub struct Ram {
     data: Vec<u8>,
 }

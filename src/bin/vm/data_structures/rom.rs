@@ -1,5 +1,7 @@
 use crate::data_structures::error::OutOfBoundsError;
 
+/// Read only memory of u32
+/// Used for storing the program
 pub struct Rom {
     data: Vec<u32>,
 }
