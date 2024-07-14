@@ -8,6 +8,7 @@ this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Mar
 
 ## Features of this project
  - A simple VM that interprets the instructions [below](#instructions)
+ - A simple assembler for this VM
  - Emulated CPU architecture
 
 ## Instructions
