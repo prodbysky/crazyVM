@@ -1,4 +1,5 @@
 use clap::Parser;
+use core::fmt;
 use std::fs::File;
 use std::{cmp::Ordering, error::Error, io::Write};
 
@@ -24,152 +25,267 @@ struct Args {
     dissasemble: bool,
 }
 
-#[derive(Debug)]
-enum CompilationError {
-    NotEnoughArguments,
-    TooManyArguments,
-    NonExistantInstruction,
-    InvalidRegisterName,
-    InvalidNumberLiteral,
+struct CompError(Line, u32, &'static str, String);
+
+impl fmt::Display for CompError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (x, _) = (self.0 .0[self.1 as usize].x, self.0 .0[self.1 as usize].y);
+        writeln!(f, "{}:", self.3)?;
+        writeln!(f, "{}", self.2)?;
+        writeln!(f, "   {}", self.0.to_string())?;
+        write!(f, "   ")?;
+        for _ in 0..x + 1 {
+            write!(f, " ")?;
+        }
+        write!(f, "^")?;
+
+        Ok(())
+    }
 }
 
-fn assemble(source: String) -> Result<Vec<u32>, CompilationError> {
-    let lines = source
+#[derive(Clone)]
+struct Token {
+    value: String,
+    x: u32,
+    y: u32,
+}
+
+fn token_from_line(line: &str, x: &mut usize, y: u32) -> Token {
+    let mut buffer = String::new();
+    let begin = *x;
+
+    while let Some(c) = line.chars().nth(*x) {
+        if c.is_whitespace() {
+            break;
+        }
+
+        buffer.push(c);
+        *x += 1;
+    }
+
+    Token {
+        value: buffer,
+        x: begin as u32,
+        y,
+    }
+}
+
+#[derive(Clone)]
+struct Line(Vec<Token>);
+
+impl ToString for Line {
+    fn to_string(&self) -> String {
+        self.0
+            .iter()
+            .fold(String::new(), |mut prev, curr| {
+                prev.push_str(format!(" {}", curr.value).as_str());
+                prev
+            })
+            .to_owned()
+    }
+}
+
+fn tokenize(source: String) -> Vec<Line> {
+    let lines: Vec<(usize, &str)> = source
         .lines()
-        .filter(|line| !line.starts_with(';'))
-        .collect::<Vec<_>>();
+        .filter(|l| !l.starts_with(';'))
+        .map(|l| l.trim())
+        .enumerate()
+        .collect();
+    let mut tokens = vec![];
+
+    for line in lines {
+        let mut token_line = vec![];
+
+        let mut x = 0;
+
+        while x < line.1.len() {
+            if line.1.chars().nth(x).is_some_and(|c| c.is_whitespace()) {
+                x += 1;
+                continue;
+            }
+            token_line.push(token_from_line(line.1, &mut x, line.0 as u32));
+            x += 1; // Skip whitespace after token
+        }
+        tokens.push(Line(token_line));
+    }
+
+    tokens
+}
+
+fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
+    let tokens = tokenize(source);
 
     let mut buffer = vec![];
 
-    for line in lines {
-        let parts = line.split_whitespace().collect::<Vec<_>>();
-        if parts.is_empty() {
+    for line in &tokens {
+        let line = line.clone();
+        if line.0.is_empty() {
             continue;
         }
 
-        match parts[0] {
+        match line.0[0].value.split_whitespace().collect::<Vec<_>>()[0] {
             "Add" => {
-                match parts.len().cmp(&4) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&4) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name.clone(),
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let r1 = match Register::try_from(parts[1]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r2 = match Register::try_from(parts[2]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r3 = match Register::try_from(parts[3]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
+                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
+                })?;
+                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
+                })?;
+                let r3 = Register::try_from(line.0[3].value.as_str())
+                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
 
                 buffer.push(Opcode::Add(r1, r2, r3).into())
             }
             "Sub" => {
-                match parts.len().cmp(&4) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&4) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name,
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let r1 = match Register::try_from(parts[1]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r2 = match Register::try_from(parts[2]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r3 = match Register::try_from(parts[3]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
+
+                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
+                })?;
+                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
+                })?;
+                let r3 = Register::try_from(line.0[3].value.as_str())
+                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
 
                 buffer.push(Opcode::Sub(r1, r2, r3).into())
             }
             "Mul" => {
-                match parts.len().cmp(&4) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&4) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name,
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let r1 = match Register::try_from(parts[1]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r2 = match Register::try_from(parts[2]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r3 = match Register::try_from(parts[3]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-
+                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
+                })?;
+                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
+                })?;
+                let r3 = Register::try_from(line.0[3].value.as_str())
+                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
                 buffer.push(Opcode::Mul(r1, r2, r3).into())
             }
             "Div" => {
-                match parts.len().cmp(&4) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&4) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name,
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let r1 = match Register::try_from(parts[1]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r2 = match Register::try_from(parts[2]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
-                let r3 = match Register::try_from(parts[3]) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
-                };
+
+                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
+                })?;
+                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
+                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
+                })?;
+                let r3 = Register::try_from(line.0[3].value.as_str())
+                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
 
                 buffer.push(Opcode::Div(r1, r2, r3).into())
             }
             "Imm" => {
-                match parts.len().cmp(&3) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&3) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name,
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let register = match Register::try_from(parts[1]) {
+                let register = match Register::try_from(line.0[1].value.as_str()) {
                     Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
+                    Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),
                 };
 
-                let imm_value = match Bit13Literal::try_from(parts[2]) {
+                let imm_value = match Bit13Literal::try_from(line.0[2].value.as_str()) {
                     Ok(v) => v,
-                    Err(_) => return Err(CompilationError::InvalidNumberLiteral),
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
                 };
 
                 buffer.push(Opcode::Imm(register, imm_value).into())
             }
             "Push" => {
-                match parts.len().cmp(&2) {
-                    Ordering::Less => return Err(CompilationError::NotEnoughArguments),
+                match line.0.len().cmp(&2) {
+                    Ordering::Less => {
+                        return Err(CompError(
+                            line,
+                            0,
+                            "Not enough arguments provided",
+                            file_name,
+                        ))
+                    }
                     Ordering::Equal => {}
-                    Ordering::Greater => return Err(CompilationError::TooManyArguments),
+                    Ordering::Greater => {
+                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
+                    }
                 }
-                let register = match Register::try_from(parts[1]) {
+                let register = match Register::try_from(line.0[1].value.as_str()) {
                     Ok(r) => r,
-                    Err(_) => return Err(CompilationError::InvalidRegisterName),
+                    Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),
                 };
                 buffer.push(Opcode::Push(register).into())
             }
-            _ => return Err(CompilationError::NonExistantInstruction),
+            _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }
 
     Ok(buffer)
 }
 
-fn write_binary_to_file(bin: Vec<u32>, file: String) {
+fn write_binary_to_file(bin: Vec<u32>, file: String) -> Result<(), std::io::Error> {
     let program: String = bin
         .iter()
         .map(|num| format!("{:08x}", num)) // Format as hex, zero-padded to 8 characters
@@ -177,12 +293,14 @@ fn write_binary_to_file(bin: Vec<u32>, file: String) {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let mut file = File::create(file).unwrap();
-    file.write_all(program.as_bytes()).unwrap();
+    let mut file = File::create(file)?;
+    file.write_all(program.as_bytes())?;
+
+    Ok(())
 }
 
-fn dissasemble_to_file(input_file: String, output: String) {
-    let program = std::fs::read_to_string(input_file).unwrap();
+fn dissasemble_to_file(input_file: String, output: String) -> Result<(), Box<dyn Error>> {
+    let program = std::fs::read_to_string(input_file)?;
 
     let mut instructions: Vec<Opcode> = vec![];
 
@@ -193,14 +311,16 @@ fn dissasemble_to_file(input_file: String, output: String) {
             reversed.push(ch);
         }
 
-        instructions.push(Opcode::from(u32::from_str_radix(&reversed, 16).unwrap()));
+        instructions.push(Opcode::from(u32::from_str_radix(&reversed, 16)?));
     }
 
-    let mut output = std::fs::File::create(output).unwrap();
+    let mut output = std::fs::File::create(output)?;
 
     for ins in instructions {
-        output.write_all(format!("{}\n", ins).as_bytes()).unwrap();
+        output.write_all(format!("{}\n", ins).as_bytes())?;
     }
+
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -208,10 +328,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let source = std::fs::read_to_string(&args.input_file)?;
 
     if args.dissasemble {
-        dissasemble_to_file(args.input_file, args.output_file);
+        dissasemble_to_file(args.input_file, args.output_file)?;
     } else {
-        let program = assemble(source).unwrap();
-        write_binary_to_file(program, args.output_file);
+        let program = match assemble(args.input_file, source) {
+            Ok(prog) => prog,
+            Err(e) => {
+                eprintln!("{}", e);
+                return Ok(());
+            }
+        };
+        write_binary_to_file(program, args.output_file)?;
     }
 
     Ok(())
