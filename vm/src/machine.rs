@@ -82,6 +82,8 @@ impl CrazyVM {
             .get_next_instruction()
             .ok_or(RuntimeError::NoNextInstruction)?;
 
+        eprintln!("{}", ins);
+
         match ins {
             Opcode::Add(r1, r2, r3) => {
                 self.registers[r3] = self.registers[r1] + self.registers[r2];

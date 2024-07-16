@@ -7,7 +7,7 @@ use std::ops::{Index, IndexMut};
 /// Flag - Flags (over/underflow, comparisons)
 /// Zero - Always zero, writing to this does nothing
 /// Count - Never used by the program
-#[derive(Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone, Copy)]
 #[repr(u8)]
 pub enum Register {
     SP,
@@ -49,6 +49,23 @@ impl From<Register> for u32 {
             B => 5,
             C => 6,
             D => 7,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl fmt::Display for Register {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use Register::*;
+        match *self {
+            SP => write!(f, "SP"),
+            PC => write!(f, "PC"),
+            Flag => write!(f, "Flag"),
+            Zero => write!(f, "Zero"),
+            A => write!(f, "A"),
+            B => write!(f, "B"),
+            C => write!(f, "C"),
+            D => write!(f, "D"),
             _ => unreachable!(),
         }
     }

@@ -1,5 +1,6 @@
 use clap::Parser;
-use std::{cmp::Ordering, error::Error, fs::File, io::Write};
+use std::fs::File;
+use std::{cmp::Ordering, error::Error, io::Write};
 
 use common::{
     instructions::{Bit13Literal, Opcode},
@@ -17,6 +18,10 @@ struct Args {
     /// Output filename
     #[arg(short, long = "output")]
     output_file: String,
+
+    /// Dissasemble the file?
+    #[arg(short, long, default_value_t = false)]
+    dissasemble: bool,
 }
 
 #[derive(Debug)]
@@ -28,7 +33,12 @@ enum CompilationError {
     InvalidNumberLiteral,
 }
 
-fn assemble(lines: &[&str]) -> Result<Vec<u32>, CompilationError> {
+fn assemble(source: String) -> Result<Vec<u32>, CompilationError> {
+    let lines = source
+        .lines()
+        .filter(|line| !line.starts_with(';'))
+        .collect::<Vec<_>>();
+
     let mut buffer = vec![];
 
     for line in lines {
@@ -159,24 +169,50 @@ fn assemble(lines: &[&str]) -> Result<Vec<u32>, CompilationError> {
     Ok(buffer)
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let args = Args::parse();
-    let source = std::fs::read_to_string(args.input_file)?;
-    let source = source
-        .lines()
-        .filter(|line| !line.starts_with(';'))
-        .collect::<Vec<_>>();
-
-    let program = assemble(&source).unwrap();
-    let program: String = program
+fn write_binary_to_file(bin: Vec<u32>, file: String) {
+    let program: String = bin
         .iter()
         .map(|num| format!("{:08x}", num)) // Format as hex, zero-padded to 8 characters
         .map(|hex_str| hex_str.chars().rev().collect::<String>()) // Reverse the hex string
         .collect::<Vec<String>>()
-        .join(" ");
+        .join("\n");
 
-    let mut file = File::create(args.output_file)?;
-    file.write_all(program.as_bytes())?;
+    let mut file = File::create(file).unwrap();
+    file.write_all(program.as_bytes()).unwrap();
+}
+
+fn dissasemble_to_file(input_file: String, output: String) {
+    let program = std::fs::read_to_string(input_file).unwrap();
+
+    let mut instructions: Vec<Opcode> = vec![];
+
+    for line in program.lines() {
+        let mut reversed = String::with_capacity(line.len());
+
+        for ch in line.chars().rev() {
+            reversed.push(ch);
+        }
+
+        instructions.push(Opcode::from(u32::from_str_radix(&reversed, 16).unwrap()));
+    }
+
+    let mut output = std::fs::File::create(output).unwrap();
+
+    for ins in instructions {
+        output.write_all(format!("{}\n", ins).as_bytes()).unwrap();
+    }
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let args = Args::parse();
+    let source = std::fs::read_to_string(&args.input_file)?;
+
+    if args.dissasemble {
+        dissasemble_to_file(args.input_file, args.output_file);
+    } else {
+        let program = assemble(source).unwrap();
+        write_binary_to_file(program, args.output_file);
+    }
 
     Ok(())
 }

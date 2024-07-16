@@ -1,9 +1,10 @@
+use core::fmt;
 use std::cmp::Ordering;
 
 use crate::registers::Register;
 
 /// The literal available in the Imm instruction
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Bit13Literal(u16);
 
 impl From<Bit13Literal> for u32 {
@@ -40,7 +41,7 @@ impl TryFrom<&str> for Bit13Literal {
 }
 
 #[repr(u8)]
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum Opcode {
     /// Arithmetic operations
     Add(Register, Register, Register),
@@ -112,6 +113,28 @@ impl From<Opcode> for u32 {
                 ins |= u32::from(r1) << 8;
                 ins
             }
+        }
+    }
+}
+
+impl fmt::Display for Opcode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use Opcode::*;
+        let op_name = match *self {
+            Add(..) => "Add",
+            Sub(..) => "Sub",
+            Mul(..) => "Mul",
+            Div(..) => "Div",
+            Imm(..) => "Imm",
+            Push(..) => "Push",
+        };
+
+        match *self {
+            Add(r1, r2, r3) | Sub(r1, r2, r3) | Mul(r1, r2, r3) | Div(r1, r2, r3) => {
+                write!(f, "{} {} {} {}", op_name, r1, r2, r3)
+            }
+            Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0.to_string()),
+            Push(r1) => write!(f, "{} {}", op_name, r1),
         }
     }
 }
