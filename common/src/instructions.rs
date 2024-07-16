@@ -74,45 +74,12 @@ impl From<u32> for Opcode {
 impl From<Opcode> for u32 {
     fn from(val: Opcode) -> Self {
         match val {
-            Opcode::Add(r1, r2, r3) => {
-                let mut ins: u32 = 0x01;
-                ins |= u32::from(r1) << 8;
-                ins |= u32::from(r2) << 11;
-                ins |= u32::from(r3) << 14;
-                ins
-            }
-            Opcode::Sub(r1, r2, r3) => {
-                let mut ins: u32 = 0x02;
-                ins |= u32::from(r1) << 8;
-                ins |= u32::from(r2) << 11;
-                ins |= u32::from(r3) << 14;
-                ins
-            }
-            Opcode::Mul(r1, r2, r3) => {
-                let mut ins: u32 = 0x03;
-                ins |= u32::from(r1) << 8;
-                ins |= u32::from(r2) << 11;
-                ins |= u32::from(r3) << 14;
-                ins
-            }
-            Opcode::Div(r1, r2, r3) => {
-                let mut ins: u32 = 0x04;
-                ins |= u32::from(r1) << 8;
-                ins |= u32::from(r2) << 11;
-                ins |= u32::from(r3) << 14;
-                ins
-            }
-            Opcode::Imm(r1, imm) => {
-                let mut ins: u32 = 0x05;
-                ins |= u32::from(r1) << 8;
-                ins |= u32::from(imm) << 11;
-                ins
-            }
-            Opcode::Push(r1) => {
-                let mut ins: u32 = 0x06;
-                ins |= u32::from(r1) << 8;
-                ins
-            }
+            Opcode::Add(r1, r2, r3) => 0x01_u32.reg_3_instruction(r1, r2, r3),
+            Opcode::Sub(r1, r2, r3) => 0x02_u32.reg_3_instruction(r1, r2, r3),
+            Opcode::Mul(r1, r2, r3) => 0x03_u32.reg_3_instruction(r1, r2, r3),
+            Opcode::Div(r1, r2, r3) => 0x04_u32.reg_3_instruction(r1, r2, r3),
+            Opcode::Imm(r1, imm) => 0x05_u32.imm_instruction(r1, imm),
+            Opcode::Push(r1) => 0x06_u32.reg_1_instruction(r1),
         }
     }
 }
@@ -146,6 +113,10 @@ trait Instruction {
     fn r2(&self) -> Register;
     fn r3(&self) -> Register;
     fn lit13(&self) -> Bit13Literal;
+
+    fn reg_1_instruction(&mut self, r1: Register) -> u32;
+    fn reg_3_instruction(&mut self, r1: Register, r2: Register, r3: Register) -> u32;
+    fn imm_instruction(&mut self, r1: Register, imm: Bit13Literal) -> u32;
 }
 
 impl Instruction for u32 {
@@ -167,5 +138,22 @@ impl Instruction for u32 {
 
     fn lit13(&self) -> Bit13Literal {
         Bit13Literal(((self & 0x8fff00) >> 11) as u16)
+    }
+
+    fn reg_1_instruction(&mut self, r1: Register) -> u32 {
+        *self | u32::from(r1) << 8
+    }
+
+    fn reg_3_instruction(&mut self, r1: Register, r2: Register, r3: Register) -> u32 {
+        *self |= u32::from(r1) << 8;
+        *self |= u32::from(r2) << 11;
+        *self |= u32::from(r3) << 14;
+        *self
+    }
+
+    fn imm_instruction(&mut self, r1: Register, imm: Bit13Literal) -> u32 {
+        *self |= u32::from(r1) << 8;
+        *self |= u32::from(imm) << 11;
+        *self
     }
 }
