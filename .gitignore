@@ -19,3 +19,4 @@ Cargo.lock
 /target
 out.cr
 program.casm
+dissasembly.casm
