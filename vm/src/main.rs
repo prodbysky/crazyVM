@@ -1,10 +1,10 @@
-pub mod data_structures;
-pub mod machine;
 mod tests;
 pub mod utils;
 
 use clap::Parser;
-use machine::CrazyVM;
+use common::machine::CrazyVM;
+
+use common::machine::RuntimeError;
 
 // crazyVM executable
 #[derive(Parser, Debug)]
@@ -33,7 +33,7 @@ fn main() {
     loop {
         match machine.step() {
             Ok(()) => {}
-            Err(machine::RuntimeError::NoNextInstruction) => break,
+            Err(RuntimeError::NoNextInstruction) => break,
             Err(e) => {
                 eprintln!("FATAL ERROR: {}", e);
                 break;

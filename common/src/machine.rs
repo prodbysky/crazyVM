@@ -1,7 +1,7 @@
 use core::fmt;
 
-use common::instructions::Opcode;
-use common::registers::{Register, Registers};
+use crate::instructions::Opcode;
+use crate::registers::{Register, Registers};
 
 use crate::data_structures::{ram::Ram, rom::Rom};
 
