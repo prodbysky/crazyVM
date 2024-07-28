@@ -138,6 +138,17 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
         )),
     };
 
+    let get_reg_or_ret = |idx: usize, line: &Line, file: &str| -> Result<Register, CompError> {
+        Register::try_from(line.0[idx].value.as_str()).map_err(|_| {
+            CompError(
+                line.clone(),
+                idx as u32,
+                "Invalid register name",
+                file.to_string(),
+            )
+        })
+    };
+
     for line in &tokens {
         let line = line.clone();
         if line.0.is_empty() {
@@ -147,63 +158,39 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
         match line.0[0].value.split_whitespace().collect::<Vec<_>>()[0] {
             "Add" => {
                 err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
-                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
-                })?;
-                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
-                })?;
-                let r3 = Register::try_from(line.0[3].value.as_str())
-                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+                let r3 = get_reg_or_ret(3, &line, &file_name)?;
 
                 buffer.push(Opcode::Add(r1, r2, r3).into())
             }
             "Sub" => {
                 err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
-
-                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
-                })?;
-                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
-                })?;
-                let r3 = Register::try_from(line.0[3].value.as_str())
-                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+                let r3 = get_reg_or_ret(3, &line, &file_name)?;
 
                 buffer.push(Opcode::Sub(r1, r2, r3).into())
             }
             "Mul" => {
                 err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
-                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
-                })?;
-                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
-                })?;
-                let r3 = Register::try_from(line.0[3].value.as_str())
-                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+                let r3 = get_reg_or_ret(3, &line, &file_name)?;
+
                 buffer.push(Opcode::Mul(r1, r2, r3).into())
             }
             "Div" => {
                 err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
-
-                let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 1, "Invalid register name", file_name.clone())
-                })?;
-                let r2 = Register::try_from(line.0[2].value.as_str()).map_err(|_| {
-                    CompError(line.clone(), 2, "Invalid register name", file_name.clone())
-                })?;
-                let r3 = Register::try_from(line.0[3].value.as_str())
-                    .map_err(|_| CompError(line, 3, "Invalid register name", file_name.clone()))?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+                let r3 = get_reg_or_ret(3, &line, &file_name)?;
 
                 buffer.push(Opcode::Div(r1, r2, r3).into())
             }
             "Imm" => {
                 err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
-                let register = match Register::try_from(line.0[1].value.as_str()) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),
-                };
+                let register = get_reg_or_ret(1, &line, &file_name)?;
 
                 let imm_value = match Bit13Literal::try_from(line.0[2].value.as_str()) {
                     Ok(v) => v,
@@ -214,10 +201,8 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
             }
             "Push" => {
                 err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
-                let register = match Register::try_from(line.0[1].value.as_str()) {
-                    Ok(r) => r,
-                    Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),
-                };
+                let register = get_reg_or_ret(1, &line, &file_name)?;
+
                 buffer.push(Opcode::Push(register).into())
             }
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
