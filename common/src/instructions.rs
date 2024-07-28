@@ -50,6 +50,8 @@ pub enum Opcode {
     Div(Register, Register, Register),
     /// Misc operations
     Imm(Register, Bit13Literal),
+    JumpAbs(Register),
+    JumpRel(Register),
     /// Stack operations
     Push(Register),
     Pop(Register),
@@ -65,6 +67,8 @@ impl From<u32> for Opcode {
             0x05 => Self::Imm(value.r1(), value.lit13()),
             0x06 => Self::Push(value.r1()),
             0x07 => Self::Pop(value.r1()),
+            0x08 => Self::JumpAbs(value.r1()),
+            0x09 => Self::JumpRel(value.r1()),
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -83,6 +87,8 @@ impl From<Opcode> for u32 {
             Opcode::Imm(r1, imm) => 0x05_u32.imm_instruction(r1, imm),
             Opcode::Push(r1) => 0x06_u32.reg_1_instruction(r1),
             Opcode::Pop(r1) => 0x07_u32.reg_1_instruction(r1),
+            Opcode::JumpAbs(r1) => 0x08_u32.reg_1_instruction(r1),
+            Opcode::JumpRel(r1) => 0x09_u32.reg_1_instruction(r1),
         }
     }
 }
@@ -98,6 +104,8 @@ impl fmt::Display for Opcode {
             Imm(..) => "Imm",
             Push(..) => "Push",
             Pop(..) => "Pop",
+            JumpAbs(..) => "Jabs",
+            JumpRel(..) => "Jrel",
         };
 
         match *self {
@@ -105,7 +113,7 @@ impl fmt::Display for Opcode {
                 write!(f, "{} {} {} {}", op_name, r1, r2, r3)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
-            Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
+            Push(r1) | Pop(r1) | JumpAbs(r1) | JumpRel(r1) => write!(f, "{} {}", op_name, r1),
         }
     }
 }
