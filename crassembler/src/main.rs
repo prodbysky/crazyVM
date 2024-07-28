@@ -32,7 +32,7 @@ impl fmt::Display for CompError {
         let (x, _) = (self.0 .0[self.1 as usize].x, self.0 .0[self.1 as usize].y);
         writeln!(f, "{}:", self.3)?;
         writeln!(f, "{}", self.2)?;
-        writeln!(f, "   {}", self.0.to_string())?;
+        writeln!(f, "   {}", self.0)?;
         write!(f, "   ")?;
         for _ in 0..x + 1 {
             write!(f, " ")?;
@@ -73,15 +73,19 @@ fn token_from_line(line: &str, x: &mut usize, y: u32) -> Token {
 #[derive(Clone)]
 struct Line(Vec<Token>);
 
-impl ToString for Line {
-    fn to_string(&self) -> String {
-        self.0
-            .iter()
-            .fold(String::new(), |mut prev, curr| {
-                prev.push_str(format!(" {}", curr.value).as_str());
-                prev
-            })
-            .to_owned()
+impl fmt::Display for Line {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.0
+                .iter()
+                .fold(String::new(), |mut prev, curr| {
+                    prev.push_str(format!(" {}", curr.value).as_str());
+                    prev
+                })
+                .to_owned()
+        )
     }
 }
 
@@ -118,6 +122,22 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
     let mut buffer = vec![];
 
+    let err_from_ordering = |ordering: Ordering, line: &Line, file: &str| match ordering {
+        Ordering::Less => Err(CompError(
+            line.clone(),
+            0,
+            "Not enough arguments provided",
+            file_name.clone(),
+        )),
+        Ordering::Equal => Ok(()),
+        Ordering::Greater => Err(CompError(
+            line.clone(),
+            0,
+            "Too many arguments provided",
+            file.to_owned(),
+        )),
+    };
+
     for line in &tokens {
         let line = line.clone();
         if line.0.is_empty() {
@@ -126,20 +146,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
         match line.0[0].value.split_whitespace().collect::<Vec<_>>()[0] {
             "Add" => {
-                match line.0.len().cmp(&4) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name.clone(),
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
                 let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
                     CompError(line.clone(), 1, "Invalid register name", file_name.clone())
                 })?;
@@ -152,20 +159,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 buffer.push(Opcode::Add(r1, r2, r3).into())
             }
             "Sub" => {
-                match line.0.len().cmp(&4) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name,
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
 
                 let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
                     CompError(line.clone(), 1, "Invalid register name", file_name.clone())
@@ -179,20 +173,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 buffer.push(Opcode::Sub(r1, r2, r3).into())
             }
             "Mul" => {
-                match line.0.len().cmp(&4) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name,
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
                 let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
                     CompError(line.clone(), 1, "Invalid register name", file_name.clone())
                 })?;
@@ -204,20 +185,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 buffer.push(Opcode::Mul(r1, r2, r3).into())
             }
             "Div" => {
-                match line.0.len().cmp(&4) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name,
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&4), &line, &file_name)?;
 
                 let r1 = Register::try_from(line.0[1].value.as_str()).map_err(|_| {
                     CompError(line.clone(), 1, "Invalid register name", file_name.clone())
@@ -231,20 +199,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 buffer.push(Opcode::Div(r1, r2, r3).into())
             }
             "Imm" => {
-                match line.0.len().cmp(&3) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name,
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
                 let register = match Register::try_from(line.0[1].value.as_str()) {
                     Ok(r) => r,
                     Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),
@@ -258,20 +213,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 buffer.push(Opcode::Imm(register, imm_value).into())
             }
             "Push" => {
-                match line.0.len().cmp(&2) {
-                    Ordering::Less => {
-                        return Err(CompError(
-                            line,
-                            0,
-                            "Not enough arguments provided",
-                            file_name,
-                        ))
-                    }
-                    Ordering::Equal => {}
-                    Ordering::Greater => {
-                        return Err(CompError(line, 0, "Too many arguments provided", file_name))
-                    }
-                }
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
                 let register = match Register::try_from(line.0[1].value.as_str()) {
                     Ok(r) => r,
                     Err(_) => return Err(CompError(line, 1, "Invalid register name", file_name)),

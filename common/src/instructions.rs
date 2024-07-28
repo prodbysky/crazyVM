@@ -100,7 +100,7 @@ impl fmt::Display for Opcode {
             Add(r1, r2, r3) | Sub(r1, r2, r3) | Mul(r1, r2, r3) | Div(r1, r2, r3) => {
                 write!(f, "{} {} {} {}", op_name, r1, r2, r3)
             }
-            Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0.to_string()),
+            Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) => write!(f, "{} {}", op_name, r1),
         }
     }
