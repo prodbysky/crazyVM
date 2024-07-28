@@ -1,7 +1,7 @@
 #[cfg(test)]
 #[test]
 fn ram_write() {
-    use crate::data_structures::ram::Ram;
+    use common::data_structures::ram::Ram;
 
     let mut ram = Ram::new(1024);
 
@@ -21,7 +21,7 @@ fn ram_write() {
 #[test]
 #[should_panic]
 fn raw_write_fail() {
-    use crate::data_structures::ram::Ram;
+    use common::data_structures::ram::Ram;
 
     let mut ram = Ram::new(1024);
     ram.write(0, 1024).unwrap();
@@ -30,7 +30,7 @@ fn raw_write_fail() {
 #[test]
 #[should_panic]
 fn raw_write_many_fail() {
-    use crate::data_structures::ram::Ram;
+    use common::data_structures::ram::Ram;
 
     let mut ram = Ram::new(1024);
     ram.write_many(&[0, 1], 1024).unwrap();
@@ -38,7 +38,7 @@ fn raw_write_many_fail() {
 
 #[test]
 fn raw_read_fail() {
-    use crate::data_structures::ram::Ram;
+    use common::data_structures::ram::Ram;
 
     let mut ram = Ram::new(1024);
     ram.write_many(&[0, 1], 0).unwrap();
@@ -62,7 +62,7 @@ fn register_write() {
 
 #[test]
 fn rom_read() {
-    use crate::data_structures::rom::Rom;
+    use common::data_structures::rom::Rom;
     let rom = Rom::new(Vec::from(&[1, 2, 3, 4]));
     let single_read = rom.read(0).unwrap();
     let multiple_read = rom.read_many(1, 3).unwrap();
