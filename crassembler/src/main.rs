@@ -205,6 +205,12 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Push(register).into())
             }
+            "Pop" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let register = get_reg_or_ret(1, &line, &file_name)?;
+
+                buffer.push(Opcode::Pop(register).into())
+            }
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }

@@ -16,6 +16,7 @@ pub struct CrazyVM {
 #[derive(Debug)]
 pub enum RuntimeError {
     StackOverflow,
+    StackUnderflow,
     MemoryWrite,
     NoNextInstruction,
 }
@@ -25,6 +26,7 @@ impl fmt::Display for RuntimeError {
         let msg = match *self {
             RuntimeError::MemoryWrite => "Failed to write to memory!",
             RuntimeError::StackOverflow => "Stack overflew!",
+            RuntimeError::StackUnderflow => "Stack underflew!",
             RuntimeError::NoNextInstruction => "Failed to get next instruction!",
         };
 
@@ -55,26 +57,27 @@ impl CrazyVM {
         if (self.registers[Register::SP] + 4) as usize >= self.memory.max_size() {
             return Err(RuntimeError::StackOverflow);
         }
+
         self.memory
-            .write_many(
-                &Self::u32_to_4u8(self.registers[r]),
-                self.registers[Register::SP] as usize,
-            )
+            .write(self.registers[r], self.registers[Register::SP] as usize)
             .ok()
             .ok_or(RuntimeError::MemoryWrite)?;
         self.registers[Register::SP] += 4;
         Ok(())
     }
 
-    /// Helper function for pushing values from registers to the stack
-    fn u32_to_4u8(num: u32) -> Vec<u8> {
-        [
-            (num & 0xff) as u8,
-            ((num >> 8) & 0xff) as u8,
-            ((num >> 16) & 0xff) as u8,
-            ((num >> 24) & 0xff) as u8,
-        ]
-        .to_vec()
+    fn stack_pop(&mut self, r: Register) -> Result<(), RuntimeError> {
+        if self.registers[Register::SP] < 4 {
+            return Err(RuntimeError::StackUnderflow);
+        }
+        self.registers[Register::SP] -= 4;
+        self.registers[r] = self
+            .memory
+            .read(self.registers[Register::SP] as usize)
+            .ok()
+            .ok_or(RuntimeError::MemoryWrite)?;
+
+        Ok(())
     }
 
     pub fn step(&mut self) -> Result<(), RuntimeError> {
@@ -99,6 +102,7 @@ impl CrazyVM {
                 self.registers[r1] = imm.into();
             }
             Opcode::Push(r1) => self.stack_push(r1)?,
+            Opcode::Pop(r1) => self.stack_pop(r1)?,
         }
 
         Ok(())

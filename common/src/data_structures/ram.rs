@@ -2,7 +2,7 @@ use crate::data_structures::error::OutOfBoundsError;
 
 /// Fixed size Random access memory
 pub struct Ram {
-    data: Vec<u8>,
+    data: Vec<u32>,
 }
 
 impl Ram {
@@ -12,7 +12,7 @@ impl Ram {
         }
     }
 
-    pub fn get_data(&self) -> &[u8] {
+    pub fn get_data(&self) -> &[u32] {
         &self.data
     }
 
@@ -20,7 +20,7 @@ impl Ram {
         self.data.len()
     }
 
-    pub fn write(&mut self, byte: u8, index: usize) -> Result<(), OutOfBoundsError> {
+    pub fn write(&mut self, byte: u32, index: usize) -> Result<(), OutOfBoundsError> {
         if index >= self.data.len() {
             return Err(OutOfBoundsError(index));
         }
@@ -28,7 +28,7 @@ impl Ram {
         Ok(())
     }
 
-    pub fn write_many(&mut self, bytes: &[u8], mut index: usize) -> Result<(), OutOfBoundsError> {
+    pub fn write_many(&mut self, bytes: &[u32], mut index: usize) -> Result<(), OutOfBoundsError> {
         if index + bytes.len() > self.data.len() {
             return Err(OutOfBoundsError(index));
         }
@@ -41,7 +41,7 @@ impl Ram {
         Ok(())
     }
 
-    pub fn read(&self, index: usize) -> Result<u8, OutOfBoundsError> {
+    pub fn read(&self, index: usize) -> Result<u32, OutOfBoundsError> {
         if self.data.len() <= index {
             return Err(OutOfBoundsError(index));
         }
@@ -49,7 +49,7 @@ impl Ram {
         Ok(self.data[index])
     }
 
-    pub fn read_many(&self, mut index: usize, mut n: usize) -> Result<Vec<u8>, OutOfBoundsError> {
+    pub fn read_many(&self, mut index: usize, mut n: usize) -> Result<Vec<u32>, OutOfBoundsError> {
         if self.data.len() <= index {
             return Err(OutOfBoundsError(index));
         }
