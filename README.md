@@ -11,6 +11,9 @@ this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Mar
  - A simple assembler for this VM
  - Emulated CPU architecture
 
+## Todo
+ - Labels
+
 ## Instructions
 - Add:
     10000000 rg1 rg2 rg3 0000000 00000000
