@@ -103,12 +103,6 @@ impl CrazyVM {
             }
             Opcode::Push(r1) => self.stack_push(r1)?,
             Opcode::Pop(r1) => self.stack_pop(r1)?,
-            Opcode::JumpAbs(r1) => {
-                self.registers[Register::PC] = self.registers[r1];
-            }
-            Opcode::JumpRel(r1) => {
-                self.registers[Register::PC] += self.registers[r1];
-            }
         }
 
         Ok(())
