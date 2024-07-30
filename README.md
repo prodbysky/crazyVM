@@ -11,5 +11,8 @@ this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Mar
  - A simple assembler for this VM
  - Emulated CPU architecture
 
+## Flag register
+ - First bit is logical condition flag
+
 ## Todo
  - Labels

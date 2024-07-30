@@ -211,6 +211,47 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Pop(register).into())
             }
+            "Eq" => {
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+
+                buffer.push(Opcode::Eq(r1, r2).into())
+            }
+            "EqZ" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+
+                buffer.push(Opcode::EqZ(r1).into())
+            }
+            "Less" => {
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+
+                buffer.push(Opcode::Less(r1, r2).into())
+            }
+            "More" => {
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+
+                buffer.push(Opcode::More(r1, r2).into())
+            }
+            "LessEq" => {
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+
+                buffer.push(Opcode::LessEq(r1, r2).into())
+            }
+            "MoreEq" => {
+                err_from_ordering(line.0.len().cmp(&3), &line, &file_name)?;
+                let r1 = get_reg_or_ret(1, &line, &file_name)?;
+                let r2 = get_reg_or_ret(2, &line, &file_name)?;
+
+                buffer.push(Opcode::MoreEq(r1, r2).into())
+            }
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }

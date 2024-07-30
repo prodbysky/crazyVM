@@ -107,7 +107,11 @@ impl Registers {
 impl fmt::Display for Registers {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use Register::*;
-        writeln!(f, "SP: {} PC: {} Flag: {}", self[SP], self[PC], self[Flag])?;
+        writeln!(
+            f,
+            "SP: {} PC: {} Flag: {:b}",
+            self[SP], self[PC], self[Flag]
+        )?;
         write!(
             f,
             "A: {}   B: {}   C: {}   D: {}",

@@ -103,6 +103,24 @@ impl CrazyVM {
             }
             Opcode::Push(r1) => self.stack_push(r1)?,
             Opcode::Pop(r1) => self.stack_pop(r1)?,
+            Opcode::Eq(r1, r2) => {
+                self.registers[Register::Flag] = (self.registers[r1] == self.registers[r2]) as u32;
+            }
+            Opcode::EqZ(r1) => {
+                self.registers[Register::Flag] = (self.registers[r1] == 0) as u32;
+            }
+            Opcode::Less(r1, r2) => {
+                self.registers[Register::Flag] = (self.registers[r1] < self.registers[r2]) as u32;
+            }
+            Opcode::More(r1, r2) => {
+                self.registers[Register::Flag] = (self.registers[r1] > self.registers[r2]) as u32;
+            }
+            Opcode::LessEq(r1, r2) => {
+                self.registers[Register::Flag] = (self.registers[r1] <= self.registers[r2]) as u32;
+            }
+            Opcode::MoreEq(r1, r2) => {
+                self.registers[Register::Flag] = (self.registers[r1] >= self.registers[r2]) as u32;
+            }
         }
 
         Ok(())
