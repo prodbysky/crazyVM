@@ -61,6 +61,8 @@ pub enum Opcode {
     Jne(Bit13Literal),
     Jg(Bit13Literal),
     Jge(Bit13Literal),
+    Jl(Bit13Literal),
+    Jle(Bit13Literal),
     Jz(Bit13Literal),
     Jnz(Bit13Literal),
 
@@ -112,7 +114,9 @@ impl From<Opcode> for u32 {
             Opcode::Jge(imm) => 0x0d_u32.jump_instruction(imm),
             Opcode::Jz(imm) => 0x0e_u32.jump_instruction(imm),
             Opcode::Jnz(imm) => 0x0f_u32.jump_instruction(imm),
-            Opcode::Syscall => 0x10_u32,
+            Opcode::Jl(imm) => 0x10_u32.jump_instruction(imm),
+            Opcode::Jle(imm) => 0x11_u32.jump_instruction(imm),
+            Opcode::Syscall => 0x12_u32,
         }
     }
 }
@@ -136,6 +140,8 @@ impl fmt::Display for Opcode {
             Jge(..) => "Jge",
             Jz(..) => "Jz",
             Jnz(..) => "Jnz",
+            Jl(..) => "Jl",
+            Jle(..) => "Jle",
             Syscall => "Syscall",
         };
 
@@ -146,7 +152,8 @@ impl fmt::Display for Opcode {
             Cmp(r1, r2) => {
                 write!(f, "{} {} {}", op_name, r1, r2)
             }
-            Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) => {
+            Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) | Jl(imm)
+            | Jle(imm) => {
                 write!(f, "{} {}", op_name, imm.0)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
