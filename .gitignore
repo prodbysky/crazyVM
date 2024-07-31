@@ -20,3 +20,4 @@ Cargo.lock
 out.cr
 program.casm
 dissasembly.casm
+dissasm.casm
