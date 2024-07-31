@@ -1,5 +1,6 @@
 use clap::Parser;
 use core::fmt;
+use std::collections::HashMap;
 use std::fs::File;
 use std::{cmp::Ordering, error::Error, io::Write};
 
@@ -149,10 +150,26 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
         })
     };
 
+    let mut definitions: HashMap<String, String> = HashMap::new();
+
     for line in &tokens {
-        let line = line.clone();
+        let mut line = line.clone();
         if line.0.is_empty() {
             continue;
+        }
+
+        // Definition
+        if line.0[0].value.as_str() == "%" {
+            definitions.insert(line.0[1].value.clone(), line.0[2].value.clone());
+            continue;
+        }
+
+        for token in &mut line.0 {
+            if definitions.contains_key(&token.value) {
+                token
+                    .value
+                    .clone_from(definitions.get(&token.value).unwrap());
+            }
         }
 
         match line.0[0].value.split_whitespace().collect::<Vec<_>>()[0] {
