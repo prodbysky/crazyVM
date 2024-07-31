@@ -116,6 +116,41 @@ impl CrazyVM {
                 self.registers[Register::Flag] |=
                     ((self.registers[r1] != self.registers[r2]) as u32) << 4;
             }
+            Opcode::Jmp(imm) => {
+                self.registers[Register::PC] = imm.into();
+            }
+            Opcode::Je(imm) => {
+                if self.registers[Register::Flag] & (1 << 3) == 8 {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
+            Opcode::Jne(imm) => {
+                let result = self.registers[Register::Flag] & (1 << 4);
+                eprintln!("{}", result);
+                if self.registers[Register::Flag] & (1 << 4) == 16 {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
+            Opcode::Jg(imm) => {
+                if self.registers[Register::Flag] & (1 << 2) == 4 {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
+            Opcode::Jge(imm) => {
+                if self.registers[Register::Flag] & (1 << 2 | 1 << 3) == (1 << 2 | 1 << 3) {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
+            Opcode::Jz(imm) => {
+                if self.registers[Register::Flag] & 1 == 1 {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
+            Opcode::Jnz(imm) => {
+                if self.registers[Register::Flag] & 1 == 0 {
+                    self.registers[Register::PC] = imm.into()
+                }
+            }
         }
 
         Ok(())

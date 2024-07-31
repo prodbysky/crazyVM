@@ -218,6 +218,69 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Cmp(r1, r2).into())
             }
+            "Jmp" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jmp(imm_value).into())
+            }
+            "Je" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Je(imm_value).into())
+            }
+            "Jne" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jne(imm_value).into())
+            }
+            "Jg" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jg(imm_value).into())
+            }
+            "Jge" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jge(imm_value).into())
+            }
+            "Jz" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jz(imm_value).into())
+            }
+            "Jnz" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 2, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::Jnz(imm_value).into())
+            }
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }

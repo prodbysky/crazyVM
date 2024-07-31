@@ -55,6 +55,14 @@ pub enum Opcode {
     Pop(Register),
     /// Logical operation
     Cmp(Register, Register),
+
+    Jmp(Bit13Literal),
+    Je(Bit13Literal),
+    Jne(Bit13Literal),
+    Jg(Bit13Literal),
+    Jge(Bit13Literal),
+    Jz(Bit13Literal),
+    Jnz(Bit13Literal),
 }
 
 impl From<u32> for Opcode {
@@ -68,6 +76,13 @@ impl From<u32> for Opcode {
             0x06 => Self::Push(value.r1()),
             0x07 => Self::Pop(value.r1()),
             0x08 => Self::Cmp(value.r1(), value.r2()),
+            0x09 => Self::Jmp(value.lit13()),
+            0x0a => Self::Je(value.lit13()),
+            0x0b => Self::Jne(value.lit13()),
+            0x0c => Self::Jg(value.lit13()),
+            0x0d => Self::Jge(value.lit13()),
+            0x0e => Self::Jz(value.lit13()),
+            0x0f => Self::Jnz(value.lit13()),
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -87,6 +102,13 @@ impl From<Opcode> for u32 {
             Opcode::Push(r1) => 0x06_u32.reg_1_instruction(r1),
             Opcode::Pop(r1) => 0x07_u32.reg_1_instruction(r1),
             Opcode::Cmp(r1, r2) => 0x08_u32.reg_2_instruction(r1, r2),
+            Opcode::Jmp(imm) => 0x09_u32.jump_instruction(imm),
+            Opcode::Je(imm) => 0x0a_u32.jump_instruction(imm),
+            Opcode::Jne(imm) => 0x0b_u32.jump_instruction(imm),
+            Opcode::Jg(imm) => 0x0c_u32.jump_instruction(imm),
+            Opcode::Jge(imm) => 0x0d_u32.jump_instruction(imm),
+            Opcode::Jz(imm) => 0x0e_u32.jump_instruction(imm),
+            Opcode::Jnz(imm) => 0x0f_u32.jump_instruction(imm),
         }
     }
 }
@@ -103,6 +125,13 @@ impl fmt::Display for Opcode {
             Push(..) => "Push",
             Pop(..) => "Pop",
             Cmp(..) => "Cmp",
+            Jmp(..) => "Jmp",
+            Je(..) => "Je",
+            Jne(..) => "Jne",
+            Jg(..) => "Jg",
+            Jge(..) => "Jge",
+            Jz(..) => "Jz",
+            Jnz(..) => "Jnz",
         };
 
         match *self {
@@ -111,6 +140,9 @@ impl fmt::Display for Opcode {
             }
             Cmp(r1, r2) => {
                 write!(f, "{} {} {}", op_name, r1, r2)
+            }
+            Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) => {
+                write!(f, "{} {}", op_name, imm.0)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
@@ -130,6 +162,7 @@ trait Instruction {
     fn reg_2_instruction(&mut self, r1: Register, r2: Register) -> u32;
     fn reg_3_instruction(&mut self, r1: Register, r2: Register, r3: Register) -> u32;
     fn imm_instruction(&mut self, r1: Register, imm: Bit13Literal) -> u32;
+    fn jump_instruction(&mut self, imm: Bit13Literal) -> u32;
 }
 
 impl Instruction for u32 {
@@ -174,5 +207,9 @@ impl Instruction for u32 {
         *self |= u32::from(r1) << 8;
         *self |= u32::from(imm) << 11;
         *self
+    }
+
+    fn jump_instruction(&mut self, imm: Bit13Literal) -> u32 {
+        *self | u32::from(imm) << 11
     }
 }
