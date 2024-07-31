@@ -109,7 +109,7 @@ impl fmt::Display for Registers {
         use Register::*;
         writeln!(
             f,
-            "SP: {} PC: {} Flag: {:b}",
+            "SP: {} PC: {} Flag: {:032b}",
             self[SP], self[PC], self[Flag]
         )?;
         write!(

@@ -54,12 +54,7 @@ pub enum Opcode {
     Push(Register),
     Pop(Register),
     /// Logical operation
-    Eq(Register, Register),
-    EqZ(Register),
-    Less(Register, Register),
-    More(Register, Register),
-    LessEq(Register, Register),
-    MoreEq(Register, Register),
+    Cmp(Register, Register),
 }
 
 impl From<u32> for Opcode {
@@ -72,12 +67,7 @@ impl From<u32> for Opcode {
             0x05 => Self::Imm(value.r1(), value.lit13()),
             0x06 => Self::Push(value.r1()),
             0x07 => Self::Pop(value.r1()),
-            0x08 => Self::Eq(value.r1(), value.r2()),
-            0x09 => Self::EqZ(value.r1()),
-            0x0a => Self::Less(value.r1(), value.r2()),
-            0x0b => Self::More(value.r1(), value.r2()),
-            0x0c => Self::LessEq(value.r1(), value.r2()),
-            0x0d => Self::MoreEq(value.r1(), value.r2()),
+            0x08 => Self::Cmp(value.r1(), value.r2()),
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -96,12 +86,7 @@ impl From<Opcode> for u32 {
             Opcode::Imm(r1, imm) => 0x05_u32.imm_instruction(r1, imm),
             Opcode::Push(r1) => 0x06_u32.reg_1_instruction(r1),
             Opcode::Pop(r1) => 0x07_u32.reg_1_instruction(r1),
-            Opcode::Eq(r1, r2) => 0x08_u32.reg_2_instruction(r1, r2),
-            Opcode::EqZ(r1) => 0x09_u32.reg_1_instruction(r1),
-            Opcode::Less(r1, r2) => 0x0a_u32.reg_2_instruction(r1, r2),
-            Opcode::More(r1, r2) => 0x0b_u32.reg_2_instruction(r1, r2),
-            Opcode::LessEq(r1, r2) => 0x0c_u32.reg_2_instruction(r1, r2),
-            Opcode::MoreEq(r1, r2) => 0x0d_u32.reg_2_instruction(r1, r2),
+            Opcode::Cmp(r1, r2) => 0x08_u32.reg_2_instruction(r1, r2),
         }
     }
 }
@@ -117,23 +102,18 @@ impl fmt::Display for Opcode {
             Imm(..) => "Imm",
             Push(..) => "Push",
             Pop(..) => "Pop",
-            Eq(..) => "Eq",
-            EqZ(..) => "EqZ",
-            Less(..) => "Less",
-            More(..) => "More",
-            LessEq(..) => "LessEq",
-            MoreEq(..) => "MoreEq",
+            Cmp(..) => "Cmp",
         };
 
         match *self {
             Add(r1, r2, r3) | Sub(r1, r2, r3) | Mul(r1, r2, r3) | Div(r1, r2, r3) => {
                 write!(f, "{} {} {} {}", op_name, r1, r2, r3)
             }
-            Eq(r1, r2) | Less(r1, r2) | More(r1, r2) | LessEq(r1, r2) | MoreEq(r1, r2) => {
+            Cmp(r1, r2) => {
                 write!(f, "{} {} {}", op_name, r1, r2)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
-            Push(r1) | Pop(r1) | EqZ(r1) => write!(f, "{} {}", op_name, r1),
+            Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
         }
     }
 }
