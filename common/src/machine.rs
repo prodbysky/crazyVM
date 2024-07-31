@@ -80,7 +80,7 @@ impl CrazyVM {
         Ok(())
     }
 
-    pub fn step(&mut self) -> Result<(), RuntimeError> {
+    pub fn step(&mut self) -> Result<Option<u32>, RuntimeError> {
         let ins = self
             .get_next_instruction()
             .ok_or(RuntimeError::NoNextInstruction)?;
@@ -152,6 +152,10 @@ impl CrazyVM {
                 }
             }
             Opcode::Syscall => match self.registers[Register::A] {
+                0 => {
+                    let code = self.registers[Register::B];
+                    return Ok(Some(code));
+                }
                 1 => {
                     let _fd = self.registers[Register::B];
                     let base_addr = self.registers[Register::C];
@@ -193,7 +197,7 @@ impl CrazyVM {
             },
         }
 
-        Ok(())
+        Ok(None)
     }
 
     /// Used for debug purposes

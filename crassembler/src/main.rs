@@ -288,6 +288,10 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }
+    // Exit with 0 exit code
+    buffer.push(Opcode::Imm(Register::A, Bit13Literal::try_from("0").unwrap()).into());
+    buffer.push(Opcode::Imm(Register::B, Bit13Literal::try_from("0").unwrap()).into());
+    buffer.push(Opcode::Syscall.into());
 
     Ok(buffer)
 }
@@ -311,7 +315,7 @@ fn dissasemble_to_file(input_file: String, output: String) -> Result<(), Box<dyn
 
     let mut instructions: Vec<Opcode> = vec![];
 
-    for line in program.lines() {
+    for line in program.split_whitespace() {
         let mut reversed = String::with_capacity(line.len());
 
         for ch in line.chars().rev() {
