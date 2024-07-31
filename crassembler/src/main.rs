@@ -281,6 +281,10 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Jnz(imm_value).into())
             }
+            "Syscall" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::Syscall.into())
+            }
             _ => return Err(CompError(line, 0, "Unknown instruction", file_name)),
         }
     }
