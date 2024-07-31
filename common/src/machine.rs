@@ -1,6 +1,4 @@
 use core::fmt;
-use std::io::Read;
-use std::usize;
 
 use crate::instructions::Opcode;
 use crate::registers::{Register, Registers};
@@ -164,7 +162,6 @@ impl CrazyVM {
 
                     let stdin = std::io::stdin();
                     stdin.read_line(&mut buf).unwrap();
-                    eprintln!("{:?}", buf);
 
                     for (i, c) in buf.bytes().enumerate() {
                         if i >= len as usize {
@@ -172,6 +169,21 @@ impl CrazyVM {
                         }
                         self.registers[Register::A] = c as u32;
                         self.stack_push(Register::A).unwrap();
+                    }
+                    self.registers[Register::SP] = saved_addr;
+                }
+                2 => {
+                    let _fd = self.registers[Register::B];
+                    let base_addr = self.registers[Register::C];
+                    let len = self.registers[Register::D];
+                    let saved_addr = self.registers[Register::SP];
+                    self.registers[Register::SP] = base_addr;
+
+                    for i in base_addr..base_addr + len {
+                        print!(
+                            "{}",
+                            char::from_u32(self.memory.read(i as usize).unwrap()).unwrap()
+                        );
                     }
                     self.registers[Register::SP] = saved_addr;
                 }

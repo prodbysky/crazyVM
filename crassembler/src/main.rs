@@ -298,7 +298,7 @@ fn write_binary_to_file(bin: Vec<u32>, file: String) -> Result<(), std::io::Erro
         .map(|num| format!("{:08x}", num)) // Format as hex, zero-padded to 8 characters
         .map(|hex_str| hex_str.chars().rev().collect::<String>()) // Reverse the hex string
         .collect::<Vec<String>>()
-        .join("\n");
+        .join(" ");
 
     let mut file = File::create(file)?;
     file.write_all(program.as_bytes())?;
