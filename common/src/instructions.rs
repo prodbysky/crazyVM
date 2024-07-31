@@ -87,7 +87,9 @@ impl From<u32> for Opcode {
             0x0d => Self::Jge(value.lit13()),
             0x0e => Self::Jz(value.lit13()),
             0x0f => Self::Jnz(value.lit13()),
-            0x10 => Self::Syscall,
+            0x10 => Self::Jl(value.lit13()),
+            0x11 => Self::Jle(value.lit13()),
+            0x12 => Self::Syscall,
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -184,45 +186,47 @@ impl Instruction for u32 {
     }
 
     fn r1(&self) -> Register {
-        ((self & 0x700) >> 8).into()
+        ((self >> 8) & 0x07).into()
     }
 
     fn r2(&self) -> Register {
-        ((self & 0x3800) >> 11).into()
+        ((self >> 11) & 0x07).into()
     }
 
     fn r3(&self) -> Register {
-        ((self & 0x1c000) >> 14).into()
+        ((self >> 14) & 0x07).into()
     }
 
     fn lit13(&self) -> Bit13Literal {
-        Bit13Literal(((self & 0x8fff00) >> 11) as u16)
+        Bit13Literal(((self >> 11) & 0x1fff) as u16)
     }
 
     fn reg_1_instruction(&mut self, r1: Register) -> u32 {
-        *self | u32::from(r1) << 8
+        *self |= (u32::from(r1) & 0x07) << 8;
+        *self
     }
 
     fn reg_2_instruction(&mut self, r1: Register, r2: Register) -> u32 {
-        *self |= u32::from(r1) << 8;
-        *self |= u32::from(r2) << 11;
+        *self |= (u32::from(r1) & 0x07) << 8;
+        *self |= (u32::from(r2) & 0x07) << 11;
         *self
     }
 
     fn reg_3_instruction(&mut self, r1: Register, r2: Register, r3: Register) -> u32 {
-        *self |= u32::from(r1) << 8;
-        *self |= u32::from(r2) << 11;
-        *self |= u32::from(r3) << 14;
+        *self |= (u32::from(r1) & 0x07) << 8;
+        *self |= (u32::from(r2) & 0x07) << 11;
+        *self |= (u32::from(r3) & 0x07) << 14;
         *self
     }
 
     fn imm_instruction(&mut self, r1: Register, imm: Bit13Literal) -> u32 {
-        *self |= u32::from(r1) << 8;
-        *self |= u32::from(imm) << 11;
+        *self |= (u32::from(r1) & 0x07) << 8;
+        *self |= (u32::from(imm) & 0x1fff) << 11;
         *self
     }
 
     fn jump_instruction(&mut self, imm: Bit13Literal) -> u32 {
-        *self | u32::from(imm) << 11
+        *self |= (u32::from(imm) & 0x1fff) << 11;
+        *self
     }
 }
