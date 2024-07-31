@@ -25,5 +25,83 @@ Syscall number goes in the A register
   - C register: base buffer pointer (ptr)
   - D register: buffer length (uint)
 
+## Examples
+ - Empty program:
+ ```
+    ; Implicit exit syscall gets generated at compile time
+    ; Therefore you don't need to put explicit exit syscall
+ ```
+ - Load immediate values:
+ ```
+    Imm A 123
+    Imm B x0f
+    Imm C b0001
+ ```
+ - Arithmetics:
+ ```
+    Imm A 69
+    Imm B 420
+    ; Do operations and store the result in C
+    Add A B C
+    Sub A B C
+    Mul A B C
+    Div A B C
+ ```
+ - Stack operations:
+ ```
+    Imm A 1337
+    ; Push the value at A to the stack
+    ; The value at A stays there
+    Push A
+    Imm A 420
+    ; Return the original value
+    Pop A
+ ```
+ - Conditional jumping
+ ```
+    Imm A 21
+    Imm B 14
+    ; A < B, A > B, ...
+    Cmp A B
+    ; If 21 != 14 Jump forwards
+    Jne 6
+    Imm C 123
+    Imm C 246
+ ```
+ - Syscalls and building strings manually
+ ```
+    ; Couple of defines for readability
+    % sys_read 1
+    % sys_write 2
+    % stdout 0
+    % stdin 1
+    % buffer_size 6
+
+    ; Save the stack pointer before allocation to D
+    Add SP Zero D
+    Imm C 54
+    Push C
+    Imm C 57
+    Push C
+    Imm C 52
+    Push C
+    Imm C 50
+    Push C
+    Imm C 48
+    Push C
+    Imm C 10
+    Push C
+
+    ; Push the first address of the string into the stack
+    Push D
+
+    Imm A sys_write
+    Imm B stdout
+    ; Acquire the first addr of the string from the stack
+    Pop C
+    Imm D buffer_size
+    Syscall
+ ```
+
 ## Todo
  - Labels

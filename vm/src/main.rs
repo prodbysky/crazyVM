@@ -35,11 +35,11 @@ fn main() {
             Ok(None) => {}
             Ok(Some(0)) => {
                 eprintln!("Program exited succesfully!");
-                return;
+                break;
             }
             Ok(Some(n)) => {
                 eprintln!("Program exited abnormally! Exit code: [{}]", n);
-                return;
+                break;
             }
             Err(RuntimeError::NoNextInstruction) => break,
             Err(e) => {
