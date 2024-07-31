@@ -102,6 +102,20 @@ Syscall number goes in the A register
     Imm D buffer_size
     Syscall
  ```
+ - For loop :D
+ ```
+    ; for (int i = 10; i > 0; i--)
+    Imm A 10
+    Imm B 1
+    Cmp A A
+    ; Jump out of loop if counter reached 0
+    Jz 7
+    ; Decrement counter
+    Sub A B A
+    ; Jump back to begining of loop
+    Jmp 2
+    Imm D 69
+ ```
 
 ## Todo
  - Labels
