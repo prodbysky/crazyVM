@@ -3,5 +3,5 @@ members = [
     "crassembler",
     "vm",
     "common"
-]
+, "macros"]
 resolver = "2"

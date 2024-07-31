@@ -1,13 +1,15 @@
 use std::fmt;
 use std::ops::{Index, IndexMut};
 
+use macros::RegisterTraits;
+
 /// A, B, C, D - General purpose registers
 /// SP - Stack pointer
 /// PC - Program pointer,
 /// Flag - Flags (over/underflow, comparisons)
 /// Zero - Always zero, writing to this does nothing
 /// Count - Never used by the program
-#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Clone, Copy, RegisterTraits)]
 #[repr(u8)]
 pub enum Register {
     SP,
@@ -19,56 +21,6 @@ pub enum Register {
     C,
     D,
     Count,
-}
-
-impl From<u32> for Register {
-    fn from(value: u32) -> Self {
-        match value {
-            0 => Self::SP,
-            1 => Self::PC,
-            2 => Self::Flag,
-            3 => Self::Zero,
-            4 => Self::A,
-            5 => Self::B,
-            6 => Self::C,
-            7 => Self::D,
-            _ => unreachable!(),
-        }
-    }
-}
-
-impl From<Register> for u32 {
-    fn from(value: Register) -> Self {
-        use Register::*;
-        match value {
-            SP => 0,
-            PC => 1,
-            Flag => 2,
-            Zero => 3,
-            A => 4,
-            B => 5,
-            C => 6,
-            D => 7,
-            _ => unreachable!(),
-        }
-    }
-}
-
-impl fmt::Display for Register {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use Register::*;
-        match *self {
-            SP => write!(f, "SP"),
-            PC => write!(f, "PC"),
-            Flag => write!(f, "Flag"),
-            Zero => write!(f, "Zero"),
-            A => write!(f, "A"),
-            B => write!(f, "B"),
-            C => write!(f, "C"),
-            D => write!(f, "D"),
-            _ => unreachable!(),
-        }
-    }
 }
 
 #[derive(Debug)]
