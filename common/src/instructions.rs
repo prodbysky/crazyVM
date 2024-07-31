@@ -63,6 +63,8 @@ pub enum Opcode {
     Jge(Bit13Literal),
     Jz(Bit13Literal),
     Jnz(Bit13Literal),
+
+    Syscall,
 }
 
 impl From<u32> for Opcode {
@@ -83,6 +85,7 @@ impl From<u32> for Opcode {
             0x0d => Self::Jge(value.lit13()),
             0x0e => Self::Jz(value.lit13()),
             0x0f => Self::Jnz(value.lit13()),
+            0x10 => Self::Syscall,
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -109,6 +112,7 @@ impl From<Opcode> for u32 {
             Opcode::Jge(imm) => 0x0d_u32.jump_instruction(imm),
             Opcode::Jz(imm) => 0x0e_u32.jump_instruction(imm),
             Opcode::Jnz(imm) => 0x0f_u32.jump_instruction(imm),
+            Opcode::Syscall => 0x10_u32,
         }
     }
 }
@@ -132,6 +136,7 @@ impl fmt::Display for Opcode {
             Jge(..) => "Jge",
             Jz(..) => "Jz",
             Jnz(..) => "Jnz",
+            Syscall => "Syscall",
         };
 
         match *self {
@@ -146,6 +151,7 @@ impl fmt::Display for Opcode {
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
+            Syscall => write!(f, "{}", op_name),
         }
     }
 }

@@ -32,7 +32,15 @@ fn main() {
     let mut machine = CrazyVM::new(&program, args.memory_size);
     loop {
         match machine.step() {
-            Ok(()) => {}
+            Ok(None) => {}
+            Ok(Some(0)) => {
+                eprintln!("Program exited succesfully!");
+                return;
+            }
+            Ok(Some(n)) => {
+                eprintln!("Program exited abnormally! Exit code: [{}]", n);
+                return;
+            }
             Err(RuntimeError::NoNextInstruction) => break,
             Err(e) => {
                 eprintln!("FATAL ERROR: {}", e);

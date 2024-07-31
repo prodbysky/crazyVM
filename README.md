@@ -7,12 +7,23 @@ a programming language with a compiler! The inspiration for
 this project came from Tsodings [BM](https://github.com/tsoding/bm), and Tom Marks' [rust-simple-vm](https://github.com/phy1um/rust-simple-vm)
 
 ## Features of this project
- - A simple VM that interprets the instructions [below](#instructions)
- - A simple assembler for this VM
+ - A simple VM that interprets the crazyVM bytecode
+ - A simple assembly language
  - Emulated CPU architecture
 
-## Flag register
- - First bit is logical condition flag
+## Syscalls
+Syscall number goes in the A register
+ - sys_exit  (0):
+  - B register: exit_code (uint)
+
+ - sys_read  (1):
+  - B register: file descriptor (uint)
+  - C register: base buffer pointer (ptr)
+  - D register: buffer length (uint)
+ - sys_write (2):
+  - B register: file descriptor (uint)
+  - C register: base buffer pointer (ptr)
+  - D register: buffer length (uint)
 
 ## Todo
  - Labels

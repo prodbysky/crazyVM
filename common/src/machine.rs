@@ -54,7 +54,7 @@ impl CrazyVM {
     }
 
     fn stack_push(&mut self, r: Register) -> Result<(), RuntimeError> {
-        if (self.registers[Register::SP] + 4) as usize >= self.memory.max_size() {
+        if (self.registers[Register::SP] + 1) as usize >= self.memory.max_size() {
             return Err(RuntimeError::StackOverflow);
         }
 
@@ -62,15 +62,15 @@ impl CrazyVM {
             .write(self.registers[r], self.registers[Register::SP] as usize)
             .ok()
             .ok_or(RuntimeError::MemoryWrite)?;
-        self.registers[Register::SP] += 4;
+        self.registers[Register::SP] += 1;
         Ok(())
     }
 
     fn stack_pop(&mut self, r: Register) -> Result<(), RuntimeError> {
-        if self.registers[Register::SP] < 4 {
+        if self.registers[Register::SP] < 1 {
             return Err(RuntimeError::StackUnderflow);
         }
-        self.registers[Register::SP] -= 4;
+        self.registers[Register::SP] -= 1;
         self.registers[r] = self
             .memory
             .read(self.registers[Register::SP] as usize)
@@ -80,7 +80,7 @@ impl CrazyVM {
         Ok(())
     }
 
-    pub fn step(&mut self) -> Result<(), RuntimeError> {
+    pub fn step(&mut self) -> Result<Option<u32>, RuntimeError> {
         let ins = self
             .get_next_instruction()
             .ok_or(RuntimeError::NoNextInstruction)?;
@@ -151,9 +151,53 @@ impl CrazyVM {
                     self.registers[Register::PC] = imm.into()
                 }
             }
+            Opcode::Syscall => match self.registers[Register::A] {
+                0 => {
+                    let code = self.registers[Register::B];
+                    return Ok(Some(code));
+                }
+                1 => {
+                    let _fd = self.registers[Register::B];
+                    let base_addr = self.registers[Register::C];
+                    let len = self.registers[Register::D];
+                    let saved_addr = self.registers[Register::SP];
+                    self.registers[Register::SP] = base_addr;
+                    let mut buf = String::new();
+
+                    let stdin = std::io::stdin();
+                    stdin.read_line(&mut buf).unwrap();
+
+                    for (i, c) in buf.bytes().enumerate() {
+                        if i >= len as usize {
+                            break;
+                        }
+                        self.registers[Register::A] = c as u32;
+                        self.stack_push(Register::A).unwrap();
+                    }
+                    self.registers[Register::SP] = saved_addr;
+                }
+                2 => {
+                    let _fd = self.registers[Register::B];
+                    let base_addr = self.registers[Register::C];
+                    let len = self.registers[Register::D];
+                    let saved_addr = self.registers[Register::SP];
+                    self.registers[Register::SP] = base_addr;
+
+                    for i in base_addr..base_addr + len {
+                        print!(
+                            "{}",
+                            char::from_u32(self.memory.read(i as usize).unwrap()).unwrap()
+                        );
+                    }
+                    self.registers[Register::SP] = saved_addr;
+                }
+                _ => {
+                    todo!()
+                }
+            },
         }
 
-        Ok(())
+        Ok(None)
     }
 
     /// Used for debug purposes
