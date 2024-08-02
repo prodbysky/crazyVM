@@ -80,6 +80,26 @@ impl CrazyVM {
         Ok(())
     }
 
+    fn stack_pop_internal(&mut self) -> u32 {
+        self.registers[Register::SP] -= 1;
+        self.memory
+            .read(self.registers[Register::SP] as usize)
+            .unwrap()
+    }
+
+    fn stack_push_internal(&mut self, val: u32) -> Result<(), RuntimeError> {
+        if (self.registers[Register::SP] + 1) as usize >= self.memory.max_size() {
+            return Err(RuntimeError::StackOverflow);
+        }
+
+        self.memory
+            .write(val, self.registers[Register::SP] as usize)
+            .ok()
+            .ok_or(RuntimeError::MemoryWrite)?;
+        self.registers[Register::SP] += 1;
+        Ok(())
+    }
+
     pub fn step(&mut self) -> Result<Option<u32>, RuntimeError> {
         let ins = self
             .get_next_instruction()
@@ -158,6 +178,26 @@ impl CrazyVM {
                 if self.registers[Register::Flag] & (1 << 1 | 1 << 3) == (1 << 1 | 1 << 3) {
                     self.registers[Register::PC] = imm.into()
                 }
+            }
+            Opcode::StackAdd => {
+                let a = self.stack_pop_internal();
+                let b = self.stack_pop_internal();
+                self.stack_push_internal(b + a).unwrap();
+            }
+            Opcode::StackSub => {
+                let a = self.stack_pop_internal();
+                let b = self.stack_pop_internal();
+                self.stack_push_internal(b - a).unwrap();
+            }
+            Opcode::StackMul => {
+                let a = self.stack_pop_internal();
+                let b = self.stack_pop_internal();
+                self.stack_push_internal(b * a).unwrap();
+            }
+            Opcode::StackDiv => {
+                let a = self.stack_pop_internal();
+                let b = self.stack_pop_internal();
+                self.stack_push_internal(b / a).unwrap();
             }
             Opcode::Syscall => match self.registers[Register::A] {
                 0 => {

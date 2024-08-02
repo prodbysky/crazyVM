@@ -298,6 +298,22 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Jnz(imm_value).into())
             }
+            "StackAdd" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackAdd.into())
+            }
+            "StackSub" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackSub.into())
+            }
+            "StackMul" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackMul.into())
+            }
+            "StackDiv" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackDiv.into())
+            }
             "Syscall" => {
                 err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
                 buffer.push(Opcode::Syscall.into())
