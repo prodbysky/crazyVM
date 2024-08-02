@@ -54,6 +54,9 @@ Syscall number goes in the A register
     ; The value at A stays there
     Push A
     Imm A 420
+    Push A
+    ; 1337 + 420 at the top of the stack
+    StackAdd
     ; Return the original value
     Pop A
  ```
@@ -115,6 +118,16 @@ Syscall number goes in the A register
     ; Jump back to begining of loop
     Jmp 2
     Imm D 69
+ ```
+ - Functions
+ ```
+ Fn GetMagic
+    Imm D 69
+    Push D
+ Ret
+
+ ; 69 at the top of the stack
+ Call GetMagic
  ```
 
 ## Todo
