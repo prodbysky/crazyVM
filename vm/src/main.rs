@@ -31,6 +31,7 @@ fn main() {
 
     let mut machine = CrazyVM::new(&program, args.memory_size);
     loop {
+        machine.dump_state();
         match machine.step() {
             Ok(None) => {}
             Ok(Some(0)) => {
@@ -48,5 +49,4 @@ fn main() {
             }
         }
     }
-    machine.dump_state();
 }

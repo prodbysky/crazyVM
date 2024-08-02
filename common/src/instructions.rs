@@ -5,7 +5,7 @@ use crate::registers::Register;
 
 /// The literal available in the Imm instruction
 #[derive(Debug, Clone, Copy)]
-pub struct Bit13Literal(u16);
+pub struct Bit13Literal(pub u16);
 
 impl From<Bit13Literal> for u32 {
     fn from(val: Bit13Literal) -> Self {
@@ -65,6 +65,9 @@ pub enum Opcode {
     Jle(Bit13Literal),
     Jz(Bit13Literal),
     Jnz(Bit13Literal),
+    Ret,
+    Call(Bit13Literal),
+    Fn(Bit13Literal),
 
     Syscall,
 }
@@ -90,6 +93,9 @@ impl From<u32> for Opcode {
             0x10 => Self::Jl(value.lit13()),
             0x11 => Self::Jle(value.lit13()),
             0x12 => Self::Syscall,
+            0x13 => Self::Ret,
+            0x14 => Self::Call(value.lit13()),
+            0x15 => Self::Fn(value.lit13()),
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -119,6 +125,9 @@ impl From<Opcode> for u32 {
             Opcode::Jl(imm) => 0x10_u32.jump_instruction(imm),
             Opcode::Jle(imm) => 0x11_u32.jump_instruction(imm),
             Opcode::Syscall => 0x12_u32,
+            Opcode::Ret => 0x13_u32,
+            Opcode::Call(imm) => 0x14_u32.jump_instruction(imm),
+            Opcode::Fn(imm) => 0x15_u32.jump_instruction(imm),
         }
     }
 }
@@ -145,6 +154,9 @@ impl fmt::Display for Opcode {
             Jl(..) => "Jl",
             Jle(..) => "Jle",
             Syscall => "Syscall",
+            Ret => "Ret",
+            Call(..) => "Call",
+            Fn(..) => "Fn",
         };
 
         match *self {
@@ -155,12 +167,12 @@ impl fmt::Display for Opcode {
                 write!(f, "{} {} {}", op_name, r1, r2)
             }
             Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) | Jl(imm)
-            | Jle(imm) => {
+            | Jle(imm) | Call(imm) | Fn(imm) => {
                 write!(f, "{} {}", op_name, imm.0)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
-            Syscall => write!(f, "{}", op_name),
+            Syscall | Ret => write!(f, "{}", op_name),
         }
     }
 }
