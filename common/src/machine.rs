@@ -1,8 +1,6 @@
-use core::fmt;
-use std::process::exit;
-
 use crate::instructions::Opcode;
 use crate::registers::{Register, Registers};
+use core::fmt;
 
 use crate::data_structures::{ram::Ram, rom::Rom};
 
