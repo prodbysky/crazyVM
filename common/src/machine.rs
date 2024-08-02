@@ -106,8 +106,6 @@ impl CrazyVM {
             .get_next_instruction()
             .ok_or(RuntimeError::NoNextInstruction)?;
 
-        eprintln!("{:?}", ins);
-
         if self.skipping_body {
             if let Opcode::Ret = ins {
                 self.skipping_body = false;
