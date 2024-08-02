@@ -130,6 +130,7 @@ impl CrazyVM {
                 self.registers[r1] = imm.into();
             }
             Opcode::Push(r1) => self.stack_push(r1)?,
+            Opcode::PushImm(imm) => self.stack_push_internal(imm.0.into())?,
             Opcode::Pop(r1) => self.stack_pop(r1)?,
             // Zero, Less, More, Eq, NotEq
             Opcode::Cmp(r1, r2) => {

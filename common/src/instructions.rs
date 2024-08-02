@@ -54,6 +54,7 @@ pub enum Opcode {
     Imm(Register, Bit13Literal),
     /// Stack operations
     Push(Register),
+    PushImm(Bit13Literal),
     Pop(Register),
     StackAdd,
     StackSub,
@@ -107,6 +108,7 @@ impl fmt::Display for Opcode {
             StackSub => "StackSub",
             StackMul => "StackMul",
             StackDiv => "StackDiv",
+            PushImm(..) => "PushImm",
         };
 
         match *self {
@@ -117,7 +119,7 @@ impl fmt::Display for Opcode {
                 write!(f, "{} {} {}", op_name, r1, r2)
             }
             Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) | Jl(imm)
-            | Jle(imm) | Call(imm) => {
+            | Jle(imm) | Call(imm) | PushImm(imm) => {
                 write!(f, "{} {}", op_name, imm.0)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),

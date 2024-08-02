@@ -223,6 +223,15 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Push(register).into())
             }
+            "PushImm" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let imm_value = match Bit13Literal::try_from(line.0[1].value.as_str()) {
+                    Ok(v) => v,
+                    Err(_) => return Err(CompError(line, 1, "Invalid number literal", file_name)),
+                };
+
+                buffer.push(Opcode::PushImm(imm_value).into())
+            }
             "Pop" => {
                 err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
                 let register = get_reg_or_ret(1, &line, &file_name)?;
@@ -313,7 +322,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
                 functions.insert(line.0[1].value.clone(), i);
                 buffer.push(Opcode::Fn.into())
-             }
+            }
             "StackAdd" => {
                 err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
                 buffer.push(Opcode::StackAdd.into())

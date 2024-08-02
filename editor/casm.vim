@@ -13,6 +13,7 @@ syn keyword casmKeyword
  \ Mul
  \ Div
  \ Imm
+ \ PushImm
  \ Push
  \ Pop
  \ StackAdd

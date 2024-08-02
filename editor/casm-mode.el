@@ -2,7 +2,7 @@
   (defconst casm-keywords
     '("Add" "Sub" "Mul" "Div" "Imm" "Push" "Pop"
       "StackAdd" "StackSub" "StackMul" "StackDiv" "Cmp" "Jmp" "Je"
-      "Jne" "Jg" "Jge" "Jl" "Jle" "Jz" "Jnz" "Ret" "Call" "Fn" "Syscall")))
+      "Jne" "Jg" "Jge" "Jl" "Jle" "Jz" "Jnz" "Ret" "Call" "Fn" "Syscall" "PushImm")))
 
 (defconst casm-highlights
   `((,(regexp-opt casm-keywords 'symbols) . font-lock-keyword-face)))
