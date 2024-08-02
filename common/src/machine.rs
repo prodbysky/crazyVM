@@ -1,4 +1,5 @@
 use core::fmt;
+use std::process::exit;
 
 use crate::instructions::Opcode;
 use crate::registers::{Register, Registers};
@@ -10,6 +11,7 @@ pub struct CrazyVM {
     program: Rom,
     registers: Registers,
     memory: Ram,
+    skipping_body: bool,
 }
 
 /// NoNextInstruction - Signals to the manager to stop stepping the VM
@@ -40,6 +42,7 @@ impl CrazyVM {
             program: program.into(),
             registers: Default::default(),
             memory: Ram::new(mem_size),
+            skipping_body: false,
         }
     }
 
@@ -105,6 +108,13 @@ impl CrazyVM {
             .get_next_instruction()
             .ok_or(RuntimeError::NoNextInstruction)?;
 
+        if self.skipping_body {
+            if let Opcode::Ret = ins {
+                self.skipping_body = false;
+                return Ok(None);
+            }
+            return Ok(None);
+        }
         match ins {
             Opcode::Add(r1, r2, r3) => {
                 self.registers[r3] = self.registers[r1] + self.registers[r2];
@@ -178,6 +188,16 @@ impl CrazyVM {
                 if self.registers[Register::Flag] & (1 << 1 | 1 << 3) == (1 << 1 | 1 << 3) {
                     self.registers[Register::PC] = imm.into()
                 }
+            }
+            Opcode::Ret => {
+                self.stack_pop(Register::PC).unwrap();
+            }
+            Opcode::Call(imm) => {
+                self.stack_push(Register::PC).unwrap();
+                self.registers[Register::PC] = (imm.0 + 1) as u32;
+            }
+            Opcode::Fn => {
+                self.skipping_body = true;
             }
             Opcode::StackAdd => {
                 let a = self.stack_pop_internal();

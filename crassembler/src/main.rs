@@ -151,8 +151,9 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
     };
 
     let mut definitions: HashMap<String, String> = HashMap::new();
+    let mut functions: HashMap<String, usize> = HashMap::new();
 
-    for line in &tokens {
+    for (i, line) in tokens.iter().enumerate() {
         let mut line = line.clone();
         if line.0.is_empty() {
             continue;
@@ -298,6 +299,21 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
 
                 buffer.push(Opcode::Jnz(imm_value).into())
             }
+            "Ret" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::Ret.into())
+            }
+            "Call" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                let addr = functions.get(&line.0[1].value).unwrap();
+                let b13 = Bit13Literal(*addr as u16);
+                buffer.push(Opcode::Call(b13).into())
+            }
+            "Fn" => {
+                err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
+                functions.insert(line.0[1].value.clone(), i);
+                buffer.push(Opcode::Fn.into())
+             }
             "StackAdd" => {
                 err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
                 buffer.push(Opcode::StackAdd.into())
