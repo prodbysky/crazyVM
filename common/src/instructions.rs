@@ -67,7 +67,7 @@ pub enum Opcode {
     Jnz(Bit13Literal),
     Ret,
     Call(Bit13Literal),
-    Fn(Bit13Literal),
+    Fn,
 
     Syscall,
 }
@@ -95,7 +95,7 @@ impl From<u32> for Opcode {
             0x12 => Self::Syscall,
             0x13 => Self::Ret,
             0x14 => Self::Call(value.lit13()),
-            0x15 => Self::Fn(value.lit13()),
+            0x15 => Self::Fn,
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -127,7 +127,7 @@ impl From<Opcode> for u32 {
             Opcode::Syscall => 0x12_u32,
             Opcode::Ret => 0x13_u32,
             Opcode::Call(imm) => 0x14_u32.jump_instruction(imm),
-            Opcode::Fn(imm) => 0x15_u32.jump_instruction(imm),
+            Opcode::Fn => 0x15_u32,
         }
     }
 }
@@ -156,7 +156,7 @@ impl fmt::Display for Opcode {
             Syscall => "Syscall",
             Ret => "Ret",
             Call(..) => "Call",
-            Fn(..) => "Fn",
+            Fn => "Fn",
         };
 
         match *self {
@@ -167,12 +167,12 @@ impl fmt::Display for Opcode {
                 write!(f, "{} {} {}", op_name, r1, r2)
             }
             Jmp(imm) | Je(imm) | Jne(imm) | Jg(imm) | Jge(imm) | Jz(imm) | Jnz(imm) | Jl(imm)
-            | Jle(imm) | Call(imm) | Fn(imm) => {
+            | Jle(imm) | Call(imm) => {
                 write!(f, "{} {}", op_name, imm.0)
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
-            Syscall | Ret => write!(f, "{}", op_name),
+            Syscall | Ret | Fn => write!(f, "{}", op_name),
         }
     }
 }

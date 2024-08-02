@@ -312,7 +312,7 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
             "Fn" => {
                 err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
                 functions.insert(line.0[1].value.clone(), i);
-                buffer.push(Opcode::Fn(Bit13Literal::try_from("0").unwrap()).into())
+                buffer.push(Opcode::Fn.into())
             }
             "Syscall" => {
                 err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;

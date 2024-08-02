@@ -95,7 +95,6 @@ impl CrazyVM {
             }
             return Ok(None);
         }
-
         match ins {
             Opcode::Add(r1, r2, r3) => {
                 self.registers[r3] = self.registers[r1] + self.registers[r2];
@@ -172,17 +171,12 @@ impl CrazyVM {
             }
             Opcode::Ret => {
                 self.stack_pop(Register::PC).unwrap();
-                eprintln!("Returning to {}", self.registers[Register::PC]);
             }
             Opcode::Call(imm) => {
-                eprintln!("Jumping to {}", imm.0);
-                eprintln!("From: {}", self.registers[Register::PC]);
-                self.registers[Register::PC] += 1;
                 self.stack_push(Register::PC).unwrap();
-                self.registers[Register::PC] = imm.into();
-                // exit(0)
+                self.registers[Register::PC] = (imm.0 + 1) as u32;
             }
-            Opcode::Fn(..) => {
+            Opcode::Fn => {
                 self.skipping_body = true;
             }
             Opcode::Syscall => match self.registers[Register::A] {
