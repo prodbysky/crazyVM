@@ -1,6 +1,8 @@
 use core::fmt;
 use std::cmp::Ordering;
 
+use macros::OpcodeTraits;
+
 use crate::registers::Register;
 
 /// The literal available in the Imm instruction
@@ -41,7 +43,7 @@ impl TryFrom<&str> for Bit13Literal {
 }
 
 #[repr(u8)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, OpcodeTraits)]
 pub enum Opcode {
     /// Arithmetic operations
     Add(Register, Register, Register),
@@ -74,74 +76,6 @@ pub enum Opcode {
     Fn,
 
     Syscall,
-}
-
-impl From<u32> for Opcode {
-    fn from(value: u32) -> Self {
-        match value.op() {
-            0x01 => Self::Add(value.r1(), value.r2(), value.r3()),
-            0x02 => Self::Sub(value.r1(), value.r2(), value.r3()),
-            0x03 => Self::Mul(value.r1(), value.r2(), value.r3()),
-            0x04 => Self::Div(value.r1(), value.r2(), value.r3()),
-            0x05 => Self::Imm(value.r1(), value.lit13()),
-            0x06 => Self::Push(value.r1()),
-            0x07 => Self::Pop(value.r1()),
-            0x08 => Self::Cmp(value.r1(), value.r2()),
-            0x09 => Self::Jmp(value.lit13()),
-            0x0a => Self::Je(value.lit13()),
-            0x0b => Self::Jne(value.lit13()),
-            0x0c => Self::Jg(value.lit13()),
-            0x0d => Self::Jge(value.lit13()),
-            0x0e => Self::Jz(value.lit13()),
-            0x0f => Self::Jnz(value.lit13()),
-            0x10 => Self::Jl(value.lit13()),
-            0x11 => Self::Jle(value.lit13()),
-            0x12 => Self::Syscall,
-            0x13 => Self::Ret,
-            0x14 => Self::Call(value.lit13()),
-            0x15 => Self::Fn,
-            0x16 => Self::StackAdd,
-            0x17 => Self::StackSub,
-            0x18 => Self::StackMul,
-            0x19 => Self::StackDiv,
-            _ => {
-                eprintln!("Unknown opcode encountered: {}", value.op());
-                unreachable!()
-            }
-        }
-    }
-}
-
-impl From<Opcode> for u32 {
-    fn from(val: Opcode) -> Self {
-        match val {
-            Opcode::Add(r1, r2, r3) => 0x01_u32.reg_3_instruction(r1, r2, r3),
-            Opcode::Sub(r1, r2, r3) => 0x02_u32.reg_3_instruction(r1, r2, r3),
-            Opcode::Mul(r1, r2, r3) => 0x03_u32.reg_3_instruction(r1, r2, r3),
-            Opcode::Div(r1, r2, r3) => 0x04_u32.reg_3_instruction(r1, r2, r3),
-            Opcode::Imm(r1, imm) => 0x05_u32.imm_instruction(r1, imm),
-            Opcode::Push(r1) => 0x06_u32.reg_1_instruction(r1),
-            Opcode::Pop(r1) => 0x07_u32.reg_1_instruction(r1),
-            Opcode::Cmp(r1, r2) => 0x08_u32.reg_2_instruction(r1, r2),
-            Opcode::Jmp(imm) => 0x09_u32.jump_instruction(imm),
-            Opcode::Je(imm) => 0x0a_u32.jump_instruction(imm),
-            Opcode::Jne(imm) => 0x0b_u32.jump_instruction(imm),
-            Opcode::Jg(imm) => 0x0c_u32.jump_instruction(imm),
-            Opcode::Jge(imm) => 0x0d_u32.jump_instruction(imm),
-            Opcode::Jz(imm) => 0x0e_u32.jump_instruction(imm),
-            Opcode::Jnz(imm) => 0x0f_u32.jump_instruction(imm),
-            Opcode::Jl(imm) => 0x10_u32.jump_instruction(imm),
-            Opcode::Jle(imm) => 0x11_u32.jump_instruction(imm),
-            Opcode::Syscall => 0x12_u32,
-            Opcode::Ret => 0x13_u32,
-            Opcode::Call(imm) => 0x14_u32.jump_instruction(imm),
-            Opcode::Fn => 0x15_u32,
-            Opcode::StackAdd => 0x16_u32,
-            Opcode::StackSub => 0x17_u32,
-            Opcode::StackMul => 0x18_u32,
-            Opcode::StackDiv => 0x19_u32,
-        }
-    }
 }
 
 impl fmt::Display for Opcode {
@@ -189,8 +123,9 @@ impl fmt::Display for Opcode {
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
 
-            Syscall | StackAdd | StackSub | StackMul | StackDiv | Ret | Fn => write!(f, "{}", op_name),
-
+            Syscall | StackAdd | StackSub | StackMul | StackDiv | Ret | Fn => {
+                write!(f, "{}", op_name)
+            }
         }
     }
 }
