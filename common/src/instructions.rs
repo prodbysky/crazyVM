@@ -53,6 +53,10 @@ pub enum Opcode {
     /// Stack operations
     Push(Register),
     Pop(Register),
+    StackAdd,
+    StackSub,
+    StackMul,
+    StackDiv,
     /// Logical operation
     Cmp(Register, Register),
 
@@ -96,6 +100,10 @@ impl From<u32> for Opcode {
             0x13 => Self::Ret,
             0x14 => Self::Call(value.lit13()),
             0x15 => Self::Fn,
+            0x16 => Self::StackAdd,
+            0x17 => Self::StackSub,
+            0x18 => Self::StackMul,
+            0x19 => Self::StackDiv,
             _ => {
                 eprintln!("Unknown opcode encountered: {}", value.op());
                 unreachable!()
@@ -128,6 +136,10 @@ impl From<Opcode> for u32 {
             Opcode::Ret => 0x13_u32,
             Opcode::Call(imm) => 0x14_u32.jump_instruction(imm),
             Opcode::Fn => 0x15_u32,
+            Opcode::StackAdd => 0x16_u32,
+            Opcode::StackSub => 0x17_u32,
+            Opcode::StackMul => 0x18_u32,
+            Opcode::StackDiv => 0x19_u32,
         }
     }
 }
@@ -157,6 +169,10 @@ impl fmt::Display for Opcode {
             Ret => "Ret",
             Call(..) => "Call",
             Fn => "Fn",
+            StackAdd => "StackAdd",
+            StackSub => "StackSub",
+            StackMul => "StackMul",
+            StackDiv => "StackDiv",
         };
 
         match *self {
@@ -172,7 +188,9 @@ impl fmt::Display for Opcode {
             }
             Imm(r1, lit) => write!(f, "{} {} {}", op_name, r1, lit.0),
             Push(r1) | Pop(r1) => write!(f, "{} {}", op_name, r1),
-            Syscall | Ret | Fn => write!(f, "{}", op_name),
+
+            Syscall | StackAdd | StackSub | StackMul | StackDiv | Ret | Fn => write!(f, "{}", op_name),
+
         }
     }
 }

@@ -313,6 +313,22 @@ fn assemble(file_name: String, source: String) -> Result<Vec<u32>, CompError> {
                 err_from_ordering(line.0.len().cmp(&2), &line, &file_name)?;
                 functions.insert(line.0[1].value.clone(), i);
                 buffer.push(Opcode::Fn.into())
+             }
+            "StackAdd" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackAdd.into())
+            }
+            "StackSub" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackSub.into())
+            }
+            "StackMul" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackMul.into())
+            }
+            "StackDiv" => {
+                err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
+                buffer.push(Opcode::StackDiv.into())
             }
             "Syscall" => {
                 err_from_ordering(line.0.len().cmp(&1), &line, &file_name)?;
